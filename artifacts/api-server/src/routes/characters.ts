@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { charactersTable, itemsTable, insertCharacterSchema } from "@workspace/db/schema";
+import { charactersTable, itemsTable } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
   GetCharacterParams,
   CreateCharacterBody,
+  UpdateCharacterParams,
+  UpdateCharacterBody,
   TriggerRestParams,
   TriggerRestBody,
 } from "@workspace/api-zod";
@@ -53,6 +55,34 @@ router.get("/:characterId", async (req, res) => {
   res.json(character);
 });
 
+router.put("/:characterId", async (req, res) => {
+  const paramsParsed = UpdateCharacterParams.safeParse({ characterId: Number(req.params.characterId) });
+  const bodyParsed = UpdateCharacterBody.safeParse(req.body);
+  if (!paramsParsed.success || !bodyParsed.success) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+  const { characterId } = paramsParsed.data;
+  const data = bodyParsed.data;
+  const [character] = await db
+    .update(charactersTable)
+    .set({
+      name: data.name,
+      playerName: data.playerName,
+      characterClass: data.characterClass,
+      race: data.race,
+      level: data.level,
+      avatarUrl: data.avatarUrl ?? null,
+    })
+    .where(eq(charactersTable.id, characterId))
+    .returning();
+  if (!character) {
+    res.status(404).json({ error: "Character not found" });
+    return;
+  }
+  res.json(character);
+});
+
 router.post("/:characterId/rest", async (req, res) => {
   const paramsParsed = TriggerRestParams.safeParse({ characterId: Number(req.params.characterId) });
   const bodyParsed = TriggerRestBody.safeParse(req.body);
@@ -70,7 +100,10 @@ router.post("/:characterId/rest", async (req, res) => {
 
   const updatedItems = [];
   for (const item of items) {
-    if (item.maxCharges == null || item.currentCharges == null) continue;
+    if (item.maxCharges == null || item.currentCharges == null) {
+      updatedItems.push(item);
+      continue;
+    }
     let shouldRecharge = false;
     if (item.rechargeOn === "short_rest" || item.rechargeOn === "long_rest") {
       shouldRecharge = restType === "long_rest" || item.rechargeOn === restType;

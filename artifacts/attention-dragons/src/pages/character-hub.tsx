@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useParams, Link } from 'wouter';
 import { useGetCharacter, useListItems, useTriggerRest, getListItemsQueryKey } from '@workspace/api-client-react';
-import { InventoryItem, InventoryItemCategory, RestRequestRestType } from '@workspace/api-client-react';
+import { InventoryItem, RestRequestRestType, CreateItemRequestLocation } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ItemCard } from '@/components/item-card';
 import { AddItemDialog } from '@/components/add-item-dialog';
+import { EditCharacterDialog } from '@/components/edit-character-dialog';
 import { CATEGORY_MAP } from '@/lib/constants';
-import { ArrowLeft, Moon, Search, Sun, Plus, PackageOpen } from 'lucide-react';
+import { ArrowLeft, Moon, Search, Sun, Plus, PackageOpen, Settings, Backpack, Shield, Box, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function CharacterHub() {
   const { characterId } = useParams<{ characterId: string }>();
@@ -19,10 +20,13 @@ export default function CharacterHub() {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const [isEditCharacterOpen, setIsEditCharacterOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [showConsumed, setShowConsumed] = useState(false);
+
+  // Vault category collapse states
+  const [openVaultCategories, setOpenVaultCategories] = useState<Record<string, boolean>>({});
 
   const { data: character, isLoading: charLoading } = useGetCharacter(id);
   const { data: items = [], isLoading: itemsLoading } = useListItems(id);
@@ -49,14 +53,30 @@ export default function CharacterHub() {
     if (!open) setTimeout(() => setEditingItem(null), 200); // Wait for exit animation
   };
 
-  // Filtering Logic locally for snappier UI since data set per character is small
+  const toggleVaultCategory = (category: string) => {
+    setOpenVaultCategories(prev => ({
+      ...prev,
+      [category]: prev[category] === undefined ? false : !prev[category]
+    }));
+  };
+
   const filteredItems = items.filter(item => {
     if (!showConsumed && item.isConsumed) return false;
     if (showConsumed && !item.isConsumed) return false;
-    if (activeCategory !== "all" && item.category !== activeCategory) return false;
     if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const equippedItems = filteredItems.filter(i => i.location === 'equipped');
+  const carriedItems = filteredItems.filter(i => i.location === 'carried');
+  const storedItems = filteredItems.filter(i => i.location === 'stored');
+
+  const groupedStoredItems = storedItems.reduce((acc, item) => {
+    const cat = item.category;
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(item);
+    return acc;
+  }, {} as Record<string, InventoryItem[]>);
 
   if (charLoading) return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-display text-2xl animate-pulse">Consulting the Archives...</div>;
   if (!character) return <div className="min-h-screen bg-background flex items-center justify-center text-destructive font-display text-2xl">Character not found in the vault.</div>;
@@ -86,7 +106,12 @@ export default function CharacterHub() {
                 />
               </div>
               <div>
-                <h1 className="text-4xl font-display font-bold text-primary tracking-wide drop-shadow-md">{character.name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-3xl sm:text-4xl font-display font-bold text-primary tracking-wide drop-shadow-md">{character.name}</h1>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setIsEditCharacterOpen(true)}>
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
                 <p className="text-muted-foreground font-sans mt-1">Level {character.level} {character.race} {character.characterClass}</p>
               </div>
             </div>
@@ -139,27 +164,6 @@ export default function CharacterHub() {
           </div>
         </div>
 
-        {/* Categories & Items Grid */}
-        {!showConsumed && (
-          <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory} className="mb-8">
-            <TabsList className="bg-card/80 border border-border flex flex-wrap h-auto p-1 mb-8">
-              <TabsTrigger value="all" className="font-display">All Artifacts</TabsTrigger>
-              {Object.entries(CATEGORY_MAP).map(([key, { label, icon: Icon }]) => (
-                <TabsTrigger key={key} value={key} className="font-display flex items-center gap-2">
-                  <Icon className="w-4 h-4" /> <span className="hidden sm:inline">{label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        )}
-
-        {showConsumed && (
-          <div className="mb-8 flex items-center gap-3 border-b border-border pb-4">
-            <h2 className="text-2xl font-display text-muted-foreground">The Graveyard</h2>
-            <Badge variant="outline">Consumed & Empty Items</Badge>
-          </div>
-        )}
-
         {itemsLoading ? (
           <div className="flex justify-center py-24"><div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" /></div>
         ) : filteredItems.length === 0 ? (
@@ -171,13 +175,93 @@ export default function CharacterHub() {
             </p>
           </div>
         ) : (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence mode="popLayout">
-              {filteredItems.map(item => (
-                <ItemCard key={item.id} item={item} onEdit={handleEdit} />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="space-y-16">
+            
+            {/* SECTION A: ON YOUR PERSON */}
+            <div className="space-y-8">
+              <h2 className="text-2xl font-display font-bold border-b border-border/50 pb-2 text-foreground flex items-center gap-2">
+                <Backpack className="text-primary w-6 h-6" /> On Your Person
+              </h2>
+              
+              <div className="space-y-6">
+                <h3 className="text-xl font-display text-primary flex items-center gap-2">
+                  <Shield className="w-5 h-5" /> Equipped
+                </h3>
+                {equippedItems.length > 0 ? (
+                  <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence mode="popLayout">
+                      {equippedItems.map(item => (
+                        <ItemCard key={item.id} item={item} onEdit={handleEdit} />
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">Nothing is currently equipped.</p>
+                )}
+              </div>
+
+              <div className="space-y-6">
+                <h3 className="text-xl font-display text-accent flex items-center gap-2">
+                  <Backpack className="w-5 h-5" /> In Bag
+                </h3>
+                {carriedItems.length > 0 ? (
+                  <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence mode="popLayout">
+                      {carriedItems.map(item => (
+                        <ItemCard key={item.id} item={item} onEdit={handleEdit} />
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">Your bag is empty.</p>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION B: THE VAULT */}
+            {storedItems.length > 0 && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-display font-bold border-b border-border/50 pb-2 text-muted-foreground flex items-center gap-2">
+                  <Box className="w-6 h-6" /> The Vault (Storage)
+                </h2>
+                
+                <div className="space-y-4">
+                  {Object.entries(groupedStoredItems).map(([category, catItems]) => {
+                    const catInfo = CATEGORY_MAP[category as keyof typeof CATEGORY_MAP];
+                    const Icon = catInfo?.icon || Box;
+                    const isOpen = openVaultCategories[category] ?? true;
+
+                    return (
+                      <Collapsible
+                        key={category}
+                        open={isOpen}
+                        onOpenChange={() => toggleVaultCategory(category)}
+                        className="bg-card/30 border border-border rounded-lg overflow-hidden"
+                      >
+                        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-secondary/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <Icon className="w-5 h-5 text-muted-foreground" />
+                            <span className="font-display font-bold text-lg">{catInfo?.label || category}</span>
+                            <Badge variant="secondary">{catItems.length}</Badge>
+                          </div>
+                          {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <AnimatePresence mode="popLayout">
+                              {catItems.map(item => (
+                                <ItemCard key={item.id} item={item} onEdit={handleEdit} />
+                              ))}
+                            </AnimatePresence>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
       </div>
@@ -188,6 +272,14 @@ export default function CharacterHub() {
         onOpenChange={handleCloseDialog} 
         editingItem={editingItem} 
       />
+
+      {character && (
+        <EditCharacterDialog
+          character={character}
+          open={isEditCharacterOpen}
+          onOpenChange={setIsEditCharacterOpen}
+        />
+      )}
     </div>
   );
 }

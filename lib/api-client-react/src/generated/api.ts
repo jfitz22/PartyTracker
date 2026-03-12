@@ -18,12 +18,14 @@ import type {
 
 import type {
   Character,
+  CharacterWithItems,
   CreateCharacterRequest,
   CreateItemRequest,
   ErrorResponse,
   HealthStatus,
   InventoryItem,
   ListItemsParams,
+  MoveItemRequest,
   RestRequest,
   UpdateItemRequest,
 } from "./api.schemas";
@@ -361,6 +363,93 @@ export function useGetCharacter<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Update a character
+ */
+export const getUpdateCharacterUrl = (characterId: number) => {
+  return `/api/characters/${characterId}`;
+};
+
+export const updateCharacter = async (
+  characterId: number,
+  createCharacterRequest: CreateCharacterRequest,
+  options?: RequestInit,
+): Promise<Character> => {
+  return customFetch<Character>(getUpdateCharacterUrl(characterId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createCharacterRequest),
+  });
+};
+
+export const getUpdateCharacterMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCharacter>>,
+    TError,
+    { characterId: number; data: BodyType<CreateCharacterRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCharacter>>,
+  TError,
+  { characterId: number; data: BodyType<CreateCharacterRequest> },
+  TContext
+> => {
+  const mutationKey = ["updateCharacter"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCharacter>>,
+    { characterId: number; data: BodyType<CreateCharacterRequest> }
+  > = (props) => {
+    const { characterId, data } = props ?? {};
+
+    return updateCharacter(characterId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCharacterMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCharacter>>
+>;
+export type UpdateCharacterMutationBody = BodyType<CreateCharacterRequest>;
+export type UpdateCharacterMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a character
+ */
+export const useUpdateCharacter = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCharacter>>,
+    TError,
+    { characterId: number; data: BodyType<CreateCharacterRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCharacter>>,
+  TError,
+  { characterId: number; data: BodyType<CreateCharacterRequest> },
+  TContext
+> => {
+  return useMutation(getUpdateCharacterMutationOptions(options));
+};
 
 /**
  * @summary Trigger a rest for a character (recharges items)
@@ -986,41 +1075,44 @@ export const useUseItem = <
 };
 
 /**
- * @summary Toggle equipped/stored status
+ * @summary Move an item to a different location (equipped/carried/stored)
  */
-export const getToggleEquipUrl = (characterId: number, itemId: number) => {
-  return `/api/characters/${characterId}/items/${itemId}/equip`;
+export const getMoveItemUrl = (characterId: number, itemId: number) => {
+  return `/api/characters/${characterId}/items/${itemId}/location`;
 };
 
-export const toggleEquip = async (
+export const moveItem = async (
   characterId: number,
   itemId: number,
+  moveItemRequest: MoveItemRequest,
   options?: RequestInit,
 ): Promise<InventoryItem> => {
-  return customFetch<InventoryItem>(getToggleEquipUrl(characterId, itemId), {
+  return customFetch<InventoryItem>(getMoveItemUrl(characterId, itemId), {
     ...options,
     method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(moveItemRequest),
   });
 };
 
-export const getToggleEquipMutationOptions = <
+export const getMoveItemMutationOptions = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof toggleEquip>>,
+    Awaited<ReturnType<typeof moveItem>>,
     TError,
-    { characterId: number; itemId: number },
+    { characterId: number; itemId: number; data: BodyType<MoveItemRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof toggleEquip>>,
+  Awaited<ReturnType<typeof moveItem>>,
   TError,
-  { characterId: number; itemId: number },
+  { characterId: number; itemId: number; data: BodyType<MoveItemRequest> },
   TContext
 > => {
-  const mutationKey = ["toggleEquip"];
+  const mutationKey = ["moveItem"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -1030,42 +1122,117 @@ export const getToggleEquipMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof toggleEquip>>,
-    { characterId: number; itemId: number }
+    Awaited<ReturnType<typeof moveItem>>,
+    { characterId: number; itemId: number; data: BodyType<MoveItemRequest> }
   > = (props) => {
-    const { characterId, itemId } = props ?? {};
+    const { characterId, itemId, data } = props ?? {};
 
-    return toggleEquip(characterId, itemId, requestOptions);
+    return moveItem(characterId, itemId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type ToggleEquipMutationResult = NonNullable<
-  Awaited<ReturnType<typeof toggleEquip>>
+export type MoveItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof moveItem>>
 >;
-
-export type ToggleEquipMutationError = ErrorType<unknown>;
+export type MoveItemMutationBody = BodyType<MoveItemRequest>;
+export type MoveItemMutationError = ErrorType<unknown>;
 
 /**
- * @summary Toggle equipped/stored status
+ * @summary Move an item to a different location (equipped/carried/stored)
  */
-export const useToggleEquip = <
+export const useMoveItem = <
   TError = ErrorType<unknown>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof toggleEquip>>,
+    Awaited<ReturnType<typeof moveItem>>,
     TError,
-    { characterId: number; itemId: number },
+    { characterId: number; itemId: number; data: BodyType<MoveItemRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof toggleEquip>>,
+  Awaited<ReturnType<typeof moveItem>>,
   TError,
-  { characterId: number; itemId: number },
+  { characterId: number; itemId: number; data: BodyType<MoveItemRequest> },
   TContext
 > => {
-  return useMutation(getToggleEquipMutationOptions(options));
+  return useMutation(getMoveItemMutationOptions(options));
 };
+
+/**
+ * @summary Get all characters with their items for DM view
+ */
+export const getGetDmOverviewUrl = () => {
+  return `/api/dm/overview`;
+};
+
+export const getDmOverview = async (
+  options?: RequestInit,
+): Promise<CharacterWithItems[]> => {
+  return customFetch<CharacterWithItems[]>(getGetDmOverviewUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDmOverviewQueryKey = () => {
+  return [`/api/dm/overview`] as const;
+};
+
+export const getGetDmOverviewQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDmOverview>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDmOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDmOverviewQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDmOverview>>> = ({
+    signal,
+  }) => getDmOverview({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDmOverview>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDmOverviewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDmOverview>>
+>;
+export type GetDmOverviewQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all characters with their items for DM view
+ */
+
+export function useGetDmOverview<
+  TData = Awaited<ReturnType<typeof getDmOverview>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDmOverview>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDmOverviewQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

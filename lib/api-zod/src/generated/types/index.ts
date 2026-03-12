@@ -7,21 +7,27 @@
  */
 
 export * from "./character";
+export * from "./characterWithItems";
 export * from "./createCharacterRequest";
 export * from "./createItemRequest";
 export * from "./createItemRequestCategory";
+export * from "./createItemRequestLocation";
 export * from "./createItemRequestRarity";
 export * from "./createItemRequestRechargeOn";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./inventoryItem";
 export * from "./inventoryItemCategory";
+export * from "./inventoryItemLocation";
 export * from "./inventoryItemRarity";
 export * from "./inventoryItemRechargeOn";
 export * from "./listItemsParams";
+export * from "./moveItemRequest";
+export * from "./moveItemRequestLocation";
 export * from "./restRequest";
 export * from "./restRequestRestType";
 export * from "./updateItemRequest";
 export * from "./updateItemRequestCategory";
+export * from "./updateItemRequestLocation";
 export * from "./updateItemRequestRarity";
 export * from "./updateItemRequestRechargeOn";

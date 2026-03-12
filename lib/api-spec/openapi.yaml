@@ -14,6 +14,8 @@ tags:
     description: Character operations
   - name: items
     description: Inventory item operations
+  - name: dm
+    description: Dungeon Master operations
 paths:
   /healthz:
     get:
@@ -85,6 +87,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateCharacter
+      tags: [characters]
+      summary: Update a character
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCharacterRequest"
+      responses:
+        "200":
+          description: Character updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
 
   /characters/{characterId}/rest:
     post:
@@ -272,11 +297,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/InventoryItem"
 
-  /characters/{characterId}/items/{itemId}/equip:
+  /characters/{characterId}/items/{itemId}/location:
     post:
-      operationId: toggleEquip
+      operationId: moveItem
       tags: [items]
-      summary: Toggle equipped/stored status
+      summary: Move an item to a different location (equipped/carried/stored)
       parameters:
         - name: characterId
           in: path
@@ -288,13 +313,34 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveItemRequest"
       responses:
         "200":
-          description: Equip status toggled
+          description: Item location updated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InventoryItem"
+
+  /dm/overview:
+    get:
+      operationId: getDmOverview
+      tags: [dm]
+      summary: Get all characters with their items for DM view
+      responses:
+        "200":
+          description: DM overview with all characters and items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterWithItems"
 
 components:
   schemas:
@@ -344,6 +390,41 @@ components:
         - level
         - createdAt
 
+    CharacterWithItems:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        playerName:
+          type: string
+        characterClass:
+          type: string
+        race:
+          type: string
+        level:
+          type: integer
+        avatarUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/InventoryItem"
+      required:
+        - id
+        - name
+        - playerName
+        - characterClass
+        - race
+        - level
+        - createdAt
+        - items
+
     CreateCharacterRequest:
       type: object
       properties:
@@ -390,6 +471,9 @@ components:
         imageUrl:
           type: string
           nullable: true
+        location:
+          type: string
+          enum: [equipped, carried, stored]
         isEquipped:
           type: boolean
         maxCharges:
@@ -421,6 +505,7 @@ components:
         - name
         - category
         - description
+        - location
         - isEquipped
         - isConsumable
         - isConsumed
@@ -446,6 +531,9 @@ components:
         imageUrl:
           type: string
           nullable: true
+        location:
+          type: string
+          enum: [equipped, carried, stored]
         isEquipped:
           type: boolean
         maxCharges:
@@ -468,7 +556,6 @@ components:
         - name
         - category
         - description
-        - isEquipped
         - isConsumable
 
     UpdateItemRequest:
@@ -490,6 +577,9 @@ components:
         imageUrl:
           type: string
           nullable: true
+        location:
+          type: string
+          enum: [equipped, carried, stored]
         isEquipped:
           type: boolean
         maxCharges:
@@ -508,6 +598,15 @@ components:
           nullable: true
         isConsumable:
           type: boolean
+
+    MoveItemRequest:
+      type: object
+      properties:
+        location:
+          type: string
+          enum: [equipped, carried, stored]
+      required:
+        - location
 
     RestRequest:
       type: object

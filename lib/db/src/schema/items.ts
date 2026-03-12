@@ -12,6 +12,9 @@ export type RechargeOn = typeof rechargeOnEnum[number];
 export const rarityEnum = ["common", "uncommon", "rare", "very_rare", "legendary"] as const;
 export type Rarity = typeof rarityEnum[number];
 
+export const locationEnum = ["equipped", "carried", "stored"] as const;
+export type ItemLocation = typeof locationEnum[number];
+
 export const itemsTable = pgTable("items", {
   id: serial("id").primaryKey(),
   characterId: integer("character_id").notNull().references(() => charactersTable.id, { onDelete: "cascade" }),
@@ -19,6 +22,7 @@ export const itemsTable = pgTable("items", {
   category: text("category").notNull().$type<ItemCategory>(),
   description: text("description").notNull().default(""),
   imageUrl: text("image_url"),
+  location: text("location").notNull().default("carried").$type<ItemLocation>(),
   isEquipped: boolean("is_equipped").notNull().default(false),
   maxCharges: integer("max_charges"),
   currentCharges: integer("current_charges"),

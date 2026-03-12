@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { UpdateItemRequestCategory } from "./updateItemRequestCategory";
+import type { UpdateItemRequestLocation } from "./updateItemRequestLocation";
 import type { UpdateItemRequestRarity } from "./updateItemRequestRarity";
 import type { UpdateItemRequestRechargeOn } from "./updateItemRequestRechargeOn";
 
@@ -14,6 +15,7 @@ export interface UpdateItemRequest {
   category?: UpdateItemRequestCategory;
   description?: string;
   imageUrl?: string | null;
+  location?: UpdateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;

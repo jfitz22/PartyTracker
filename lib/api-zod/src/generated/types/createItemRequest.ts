@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CreateItemRequestCategory } from "./createItemRequestCategory";
+import type { CreateItemRequestLocation } from "./createItemRequestLocation";
 import type { CreateItemRequestRarity } from "./createItemRequestRarity";
 import type { CreateItemRequestRechargeOn } from "./createItemRequestRechargeOn";
 
@@ -14,7 +15,8 @@ export interface CreateItemRequest {
   category: CreateItemRequestCategory;
   description: string;
   imageUrl?: string | null;
-  isEquipped: boolean;
+  location?: CreateItemRequestLocation;
+  isEquipped?: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;
   rechargeOn?: CreateItemRequestRechargeOn;

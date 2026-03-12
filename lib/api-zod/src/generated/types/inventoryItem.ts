@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { InventoryItemCategory } from "./inventoryItemCategory";
+import type { InventoryItemLocation } from "./inventoryItemLocation";
 import type { InventoryItemRarity } from "./inventoryItemRarity";
 import type { InventoryItemRechargeOn } from "./inventoryItemRechargeOn";
 
@@ -16,6 +17,7 @@ export interface InventoryItem {
   category: InventoryItemCategory;
   description: string;
   imageUrl?: string | null;
+  location: InventoryItemLocation;
   isEquipped: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;

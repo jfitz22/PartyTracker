@@ -61,6 +61,33 @@ export const GetCharacterResponse = zod.object({
 });
 
 /**
+ * @summary Update a character
+ */
+export const UpdateCharacterParams = zod.object({
+  characterId: zod.coerce.number(),
+});
+
+export const UpdateCharacterBody = zod.object({
+  name: zod.string(),
+  playerName: zod.string(),
+  characterClass: zod.string(),
+  race: zod.string(),
+  level: zod.number(),
+  avatarUrl: zod.string().nullish(),
+});
+
+export const UpdateCharacterResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  playerName: zod.string(),
+  characterClass: zod.string(),
+  race: zod.string(),
+  level: zod.number(),
+  avatarUrl: zod.string().nullish(),
+  createdAt: zod.date(),
+});
+
+/**
  * @summary Trigger a rest for a character (recharges items)
  */
 export const TriggerRestParams = zod.object({
@@ -85,6 +112,7 @@ export const TriggerRestResponseItem = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -126,6 +154,7 @@ export const ListItemsResponseItem = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -159,7 +188,8 @@ export const CreateItemBody = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
-  isEquipped: zod.boolean(),
+  location: zod.enum(["equipped", "carried", "stored"]).optional(),
+  isEquipped: zod.boolean().optional(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
   rechargeOn: zod.enum(["short_rest", "long_rest", "dawn", "never"]).nullish(),
@@ -191,6 +221,7 @@ export const GetItemResponse = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -219,6 +250,7 @@ export const UpdateItemBody = zod.object({
     .optional(),
   description: zod.string().optional(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]).optional(),
   isEquipped: zod.boolean().optional(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -243,6 +275,7 @@ export const UpdateItemResponse = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -286,6 +319,7 @@ export const UseItemResponse = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -300,14 +334,18 @@ export const UseItemResponse = zod.object({
 });
 
 /**
- * @summary Toggle equipped/stored status
+ * @summary Move an item to a different location (equipped/carried/stored)
  */
-export const ToggleEquipParams = zod.object({
+export const MoveItemParams = zod.object({
   characterId: zod.coerce.number(),
   itemId: zod.coerce.number(),
 });
 
-export const ToggleEquipResponse = zod.object({
+export const MoveItemBody = zod.object({
+  location: zod.enum(["equipped", "carried", "stored"]),
+});
+
+export const MoveItemResponse = zod.object({
   id: zod.number(),
   characterId: zod.number(),
   name: zod.string(),
@@ -321,6 +359,7 @@ export const ToggleEquipResponse = zod.object({
   ]),
   description: zod.string(),
   imageUrl: zod.string().nullish(),
+  location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
   currentCharges: zod.number().nullish(),
@@ -333,3 +372,49 @@ export const ToggleEquipResponse = zod.object({
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
 });
+
+/**
+ * @summary Get all characters with their items for DM view
+ */
+export const GetDmOverviewResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  playerName: zod.string(),
+  characterClass: zod.string(),
+  race: zod.string(),
+  level: zod.number(),
+  avatarUrl: zod.string().nullish(),
+  createdAt: zod.date(),
+  items: zod.array(
+    zod.object({
+      id: zod.number(),
+      characterId: zod.number(),
+      name: zod.string(),
+      category: zod.enum([
+        "weapons",
+        "armor",
+        "magic_items",
+        "scrolls",
+        "potions",
+        "misc",
+      ]),
+      description: zod.string(),
+      imageUrl: zod.string().nullish(),
+      location: zod.enum(["equipped", "carried", "stored"]),
+      isEquipped: zod.boolean(),
+      maxCharges: zod.number().nullish(),
+      currentCharges: zod.number().nullish(),
+      rechargeOn: zod
+        .enum(["short_rest", "long_rest", "dawn", "never"])
+        .nullish(),
+      rarity: zod
+        .enum(["common", "uncommon", "rare", "very_rare", "legendary"])
+        .nullish(),
+      isConsumable: zod.boolean(),
+      isConsumed: zod.boolean(),
+      isTrashed: zod.boolean(),
+      createdAt: zod.date(),
+    }),
+  ),
+});
+export const GetDmOverviewResponse = zod.array(GetDmOverviewResponseItem);

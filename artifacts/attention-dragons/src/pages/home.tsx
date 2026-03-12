@@ -2,7 +2,8 @@ import { Link } from 'wouter';
 import { useListCharacters } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddCharacterDialog } from '@/components/add-character-dialog';
-import { Shield, Skull, Scroll } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Shield, Skull, Scroll, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -40,8 +41,13 @@ export default function Home() {
           </motion.p>
         </div>
 
-        <div className="flex justify-center mb-12">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-12">
           <AddCharacterDialog />
+          <Link href="/dm">
+            <Button variant="outline" size="lg" className="text-lg border-primary/30 text-primary hover:bg-primary/10">
+              <Crown className="mr-2 h-5 w-5" /> Enter DM View
+            </Button>
+          </Link>
         </div>
 
         {isLoading ? (

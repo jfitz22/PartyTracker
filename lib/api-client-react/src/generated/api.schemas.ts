@@ -24,15 +24,6 @@ export interface Character {
   createdAt: string;
 }
 
-export interface CreateCharacterRequest {
-  name: string;
-  playerName: string;
-  characterClass: string;
-  race: string;
-  level: number;
-  avatarUrl?: string | null;
-}
-
 export type InventoryItemCategory =
   (typeof InventoryItemCategory)[keyof typeof InventoryItemCategory];
 
@@ -43,6 +34,15 @@ export const InventoryItemCategory = {
   scrolls: "scrolls",
   potions: "potions",
   misc: "misc",
+} as const;
+
+export type InventoryItemLocation =
+  (typeof InventoryItemLocation)[keyof typeof InventoryItemLocation];
+
+export const InventoryItemLocation = {
+  equipped: "equipped",
+  carried: "carried",
+  stored: "stored",
 } as const;
 
 export type InventoryItemRechargeOn =
@@ -75,6 +75,7 @@ export interface InventoryItem {
   category: InventoryItemCategory;
   description: string;
   imageUrl?: string | null;
+  location: InventoryItemLocation;
   isEquipped: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;
@@ -84,6 +85,27 @@ export interface InventoryItem {
   isConsumed: boolean;
   isTrashed: boolean;
   createdAt: string;
+}
+
+export interface CharacterWithItems {
+  id: number;
+  name: string;
+  playerName: string;
+  characterClass: string;
+  race: string;
+  level: number;
+  avatarUrl?: string | null;
+  createdAt: string;
+  items: InventoryItem[];
+}
+
+export interface CreateCharacterRequest {
+  name: string;
+  playerName: string;
+  characterClass: string;
+  race: string;
+  level: number;
+  avatarUrl?: string | null;
 }
 
 export type CreateItemRequestCategory =
@@ -96,6 +118,15 @@ export const CreateItemRequestCategory = {
   scrolls: "scrolls",
   potions: "potions",
   misc: "misc",
+} as const;
+
+export type CreateItemRequestLocation =
+  (typeof CreateItemRequestLocation)[keyof typeof CreateItemRequestLocation];
+
+export const CreateItemRequestLocation = {
+  equipped: "equipped",
+  carried: "carried",
+  stored: "stored",
 } as const;
 
 export type CreateItemRequestRechargeOn =
@@ -126,7 +157,8 @@ export interface CreateItemRequest {
   category: CreateItemRequestCategory;
   description: string;
   imageUrl?: string | null;
-  isEquipped: boolean;
+  location?: CreateItemRequestLocation;
+  isEquipped?: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;
   rechargeOn?: CreateItemRequestRechargeOn;
@@ -144,6 +176,15 @@ export const UpdateItemRequestCategory = {
   scrolls: "scrolls",
   potions: "potions",
   misc: "misc",
+} as const;
+
+export type UpdateItemRequestLocation =
+  (typeof UpdateItemRequestLocation)[keyof typeof UpdateItemRequestLocation];
+
+export const UpdateItemRequestLocation = {
+  equipped: "equipped",
+  carried: "carried",
+  stored: "stored",
 } as const;
 
 export type UpdateItemRequestRechargeOn =
@@ -174,12 +215,26 @@ export interface UpdateItemRequest {
   category?: UpdateItemRequestCategory;
   description?: string;
   imageUrl?: string | null;
+  location?: UpdateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;
   currentCharges?: number | null;
   rechargeOn?: UpdateItemRequestRechargeOn;
   rarity?: UpdateItemRequestRarity;
   isConsumable?: boolean;
+}
+
+export type MoveItemRequestLocation =
+  (typeof MoveItemRequestLocation)[keyof typeof MoveItemRequestLocation];
+
+export const MoveItemRequestLocation = {
+  equipped: "equipped",
+  carried: "carried",
+  stored: "stored",
+} as const;
+
+export interface MoveItemRequest {
+  location: MoveItemRequestLocation;
 }
 
 export type RestRequestRestType =

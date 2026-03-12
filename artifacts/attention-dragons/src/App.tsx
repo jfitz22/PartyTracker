@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import CharacterHub from "@/pages/character-hub";
+import DmDashboard from "@/pages/dm-dashboard";
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/character/:characterId" component={CharacterHub} />
+      <Route path="/dm" component={DmDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

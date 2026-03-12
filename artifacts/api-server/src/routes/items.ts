@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { itemsTable } from "@workspace/db/schema";
-import { eq, and, ilike, or } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import {
   ListItemsParams,
   ListItemsQueryParams,
@@ -12,7 +12,8 @@ import {
   UpdateItemBody,
   DeleteItemParams,
   UseItemParams,
-  ToggleEquipParams,
+  MoveItemParams,
+  MoveItemBody,
 } from "@workspace/api-zod";
 
 const router = Router({ mergeParams: true });
@@ -61,6 +62,8 @@ router.post("/", async (req, res) => {
   const { characterId } = paramsParsed.data;
   const data = bodyParsed.data;
 
+  const location = data.location ?? (data.isEquipped ? "equipped" : "carried");
+
   const [item] = await db
     .insert(itemsTable)
     .values({
@@ -69,7 +72,8 @@ router.post("/", async (req, res) => {
       category: data.category as any,
       description: data.description,
       imageUrl: data.imageUrl ?? null,
-      isEquipped: data.isEquipped,
+      location: location as any,
+      isEquipped: location === "equipped",
       maxCharges: data.maxCharges ?? null,
       currentCharges: data.maxCharges ?? null,
       rechargeOn: data.rechargeOn as any ?? null,
@@ -120,9 +124,15 @@ router.put("/:itemId", async (req, res) => {
   if (data.category !== undefined) updateData.category = data.category;
   if (data.description !== undefined) updateData.description = data.description;
   if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
-  if (data.isEquipped !== undefined) updateData.isEquipped = data.isEquipped;
+  if (data.location !== undefined) {
+    updateData.location = data.location;
+    updateData.isEquipped = data.location === "equipped";
+  } else if (data.isEquipped !== undefined) {
+    updateData.isEquipped = data.isEquipped;
+    updateData.location = data.isEquipped ? "equipped" : "carried";
+  }
   if (data.maxCharges !== undefined) updateData.maxCharges = data.maxCharges;
-  if (data.currentCharges !== undefined) updateData.currentCharges = data.currentCharges;
+  if ((data as any).currentCharges !== undefined) updateData.currentCharges = (data as any).currentCharges;
   if (data.rechargeOn !== undefined) updateData.rechargeOn = data.rechargeOn;
   if (data.rarity !== undefined) updateData.rarity = data.rarity;
   if (data.isConsumable !== undefined) updateData.isConsumable = data.isConsumable;
@@ -179,11 +189,13 @@ router.post("/:itemId/use", async (req, res) => {
   if (existing.isConsumable) {
     updateData.isConsumed = true;
     updateData.isEquipped = false;
+    updateData.location = "stored";
   } else if (existing.currentCharges != null && existing.currentCharges > 0) {
     updateData.currentCharges = existing.currentCharges - 1;
     if (existing.rechargeOn === "never" && updateData.currentCharges === 0) {
       updateData.isConsumed = true;
       updateData.isEquipped = false;
+      updateData.location = "stored";
     }
   }
 
@@ -195,30 +207,31 @@ router.post("/:itemId/use", async (req, res) => {
   res.json(item);
 });
 
-router.post("/:itemId/equip", async (req, res) => {
-  const parsed = ToggleEquipParams.safeParse({
+router.post("/:itemId/location", async (req, res) => {
+  const paramsParsed = MoveItemParams.safeParse({
     characterId: Number(req.params.characterId),
     itemId: Number(req.params.itemId),
   });
-  if (!parsed.success) {
+  const bodyParsed = MoveItemBody.safeParse(req.body);
+  if (!paramsParsed.success || !bodyParsed.success) {
     res.status(400).json({ error: "Invalid params" });
     return;
   }
-  const [existing] = await db
-    .select()
-    .from(itemsTable)
-    .where(and(eq(itemsTable.id, parsed.data.itemId), eq(itemsTable.characterId, parsed.data.characterId)));
-
-  if (!existing) {
-    res.status(404).json({ error: "Item not found" });
-    return;
-  }
+  const { itemId, characterId } = paramsParsed.data;
+  const { location } = bodyParsed.data;
 
   const [item] = await db
     .update(itemsTable)
-    .set({ isEquipped: !existing.isEquipped })
-    .where(eq(itemsTable.id, parsed.data.itemId))
+    .set({
+      location: location as any,
+      isEquipped: location === "equipped",
+    })
+    .where(and(eq(itemsTable.id, itemId), eq(itemsTable.characterId, characterId)))
     .returning();
+  if (!item) {
+    res.status(404).json({ error: "Item not found" });
+    return;
+  }
   res.json(item);
 });
 
