@@ -5,33 +5,29 @@ import { AddCharacterDialog } from '@/components/add-character-dialog';
 import { Button } from '@/components/ui/button';
 import { Shield, Skull, Scroll, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ThemeSelector } from '@/components/theme-selector';
 
 export default function Home() {
   const { data: characters, isLoading } = useListCharacters();
 
   return (
-    <div 
-      className="min-h-screen bg-background relative overflow-hidden"
-    >
-      {/* Background Image Layer */}
-      <div 
-        className="absolute inset-0 z-0 opacity-20 bg-cover bg-center bg-no-repeat pointer-events-none"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/bg-chamber.png)` }}
-      />
-      
-      {/* Gradient Wash */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-background via-background/80 to-background pointer-events-none" />
-
+    <div className="min-h-screen text-foreground relative overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24">
+
+        {/* Theme selector top right */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+          <ThemeSelector />
+        </div>
+
         <div className="text-center mb-16 space-y-4">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-display font-black text-primary drop-shadow-lg tracking-widest"
           >
             ATTENTION DRAGONS
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -75,10 +71,11 @@ export default function Home() {
                   <Card className="h-full hover:border-primary/50 hover:shadow-primary/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group bg-card/80 backdrop-blur-sm hover:-translate-y-1">
                     <CardHeader className="flex flex-row items-center gap-4">
                       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/50 bg-secondary flex-shrink-0 relative">
-                        <img 
-                          src={char.avatarUrl || `${import.meta.env.BASE_URL}images/avatar-placeholder.png`} 
-                          alt={char.name} 
+                        <img
+                          src={char.avatarUrl || `${import.meta.env.BASE_URL}images/avatar-placeholder.png`}
+                          alt={char.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                         <div className="absolute inset-0 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]" />
                       </div>

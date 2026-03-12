@@ -7,6 +7,7 @@ import { AddItemDialog } from '@/components/add-item-dialog';
 import { EditCharacterDialog } from '@/components/edit-character-dialog';
 import { CATEGORY_MAP, RARITY_MAP, RECHARGE_MAP } from '@/lib/constants';
 import { ArrowLeft, Crown, Settings, Edit, Backpack, Shield, Box, Sparkles, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import { ThemeSelector } from '@/components/theme-selector';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -39,23 +40,21 @@ export default function DmDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24 relative">
-      <div 
-        className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none"
-        style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/parchment-texture.png)`, backgroundRepeat: 'repeat' }}
-      />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <div className="flex items-center gap-4 mb-12">
-          <Link href="/" className="p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Crown className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-primary tracking-wide drop-shadow-md">
-              Dungeon Master's Overview
-            </h1>
+    <div className="min-h-screen text-foreground pb-24 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between gap-4 mb-12">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="p-2 rounded-full hover:bg-secondary text-muted-foreground hover:text-primary transition-colors">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <div className="flex items-center gap-3">
+              <Crown className="w-8 h-8 text-primary" />
+              <h1 className="text-3xl md:text-4xl font-display font-bold text-primary tracking-wide drop-shadow-md">
+                Dungeon Master's Overview
+              </h1>
+            </div>
           </div>
+          <ThemeSelector />
         </div>
 
         <div className="space-y-8">
