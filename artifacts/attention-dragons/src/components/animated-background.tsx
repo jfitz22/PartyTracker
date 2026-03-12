@@ -35,7 +35,7 @@ function useParticles(count: number, seed = 42): Particle[] {
 }
 
 function EmberParticles() {
-  const particles = useParticles(20, 1);
+  const particles = useParticles(22, 1);
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
@@ -45,23 +45,18 @@ function EmberParticles() {
           style={{
             left: `${p.x}%`,
             bottom: '-8px',
-            width: p.size * 0.5,
-            height: p.size * 0.5,
-            background: `radial-gradient(circle, hsl(30 100% 70%) 0%, hsl(20 90% 55%) 50%, transparent 100%)`,
+            width: p.size * 0.55,
+            height: p.size * 0.55,
+            background: `radial-gradient(circle, hsl(40 100% 75%) 0%, hsl(25 95% 60%) 40%, transparent 100%)`,
             opacity: p.opacity,
           }}
           animate={{
-            y: [0, -(300 + p.size * 20)],
-            x: [0, (seededRand(p.id * 23) - 0.5) * 80],
+            y: [0, -(320 + p.size * 22)],
+            x: [0, (seededRand(p.id * 23) - 0.5) * 90],
             opacity: [p.opacity, p.opacity * 0.8, 0],
             scale: [1, 0.6, 0],
           }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeOut',
-          }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'easeOut' }}
         />
       ))}
     </div>
@@ -69,7 +64,7 @@ function EmberParticles() {
 }
 
 function RuneParticles({ color }: { color: string }) {
-  const particles = useParticles(12, 2);
+  const particles = useParticles(14, 2);
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
@@ -79,22 +74,17 @@ function RuneParticles({ color }: { color: string }) {
           style={{
             left: `${p.x}%`,
             top: `${seededRand(p.id * 5) * 100}%`,
-            fontSize: p.size + 4,
+            fontSize: p.size + 6,
             color: `hsl(${color})`,
             opacity: 0,
-            textShadow: `0 0 10px hsl(${color} / 0.8)`,
+            textShadow: `0 0 12px hsl(${color} / 0.9)`,
           }}
           animate={{
-            opacity: [0, p.opacity * 0.6, 0],
-            y: [0, -60 - p.size * 5],
-            rotate: [0, (seededRand(p.id * 31) - 0.5) * 90],
+            opacity: [0, p.opacity * 0.7, 0],
+            y: [0, -70 - p.size * 6],
+            rotate: [0, (seededRand(p.id * 31) - 0.5) * 100],
           }}
-          transition={{
-            duration: p.duration * 1.5,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          transition={{ duration: p.duration * 1.6, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
         >
           {p.glyph}
         </motion.div>
@@ -104,7 +94,7 @@ function RuneParticles({ color }: { color: string }) {
 }
 
 function BubbleParticles() {
-  const particles = useParticles(18, 3);
+  const particles = useParticles(20, 3);
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
@@ -116,21 +106,16 @@ function BubbleParticles() {
             bottom: '-20px',
             width: p.size,
             height: p.size,
-            borderColor: `hsl(140 70% 55% / ${p.opacity * 0.6})`,
-            background: `radial-gradient(circle at 30% 30%, hsl(140 60% 70% / 0.15), transparent 60%)`,
+            borderColor: `hsl(140 70% 55% / ${p.opacity * 0.7})`,
+            background: `radial-gradient(circle at 30% 30%, hsl(140 60% 70% / 0.18), transparent 65%)`,
           }}
           animate={{
-            y: [0, -(400 + p.size * 10)],
-            x: [0, Math.sin(p.id) * 30, -Math.sin(p.id) * 20, 0],
-            opacity: [0, p.opacity * 0.7, p.opacity * 0.5, 0],
-            scale: [0.5, 1, 0.9, 1.05],
+            y: [0, -(420 + p.size * 12)],
+            x: [0, Math.sin(p.id) * 35, -Math.sin(p.id) * 25, 0],
+            opacity: [0, p.opacity * 0.8, p.opacity * 0.5, 0],
+            scale: [0.5, 1, 0.95, 1.08],
           }}
-          transition={{
-            duration: p.duration * 1.2,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          transition={{ duration: p.duration * 1.3, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
     </div>
@@ -138,7 +123,7 @@ function BubbleParticles() {
 }
 
 function SparkParticles() {
-  const particles = useParticles(25, 4);
+  const particles = useParticles(30, 4);
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
@@ -147,28 +132,21 @@ function SparkParticles() {
           className="absolute"
           style={{
             left: `${p.x}%`,
-            bottom: `${seededRand(p.id * 7) * 30}%`,
+            bottom: `${seededRand(p.id * 7) * 25}%`,
             width: p.size * 0.3,
             height: p.size * 0.3,
-            background: seededRand(p.id) > 0.5
-              ? `hsl(0 90% 65%)`
-              : `hsl(40 90% 65%)`,
+            background: seededRand(p.id) > 0.5 ? `hsl(0 90% 68%)` : `hsl(40 95% 68%)`,
             borderRadius: '1px',
             opacity: p.opacity,
             transform: `rotate(${seededRand(p.id * 37) * 45}deg)`,
           }}
           animate={{
-            y: [0, -(80 + p.size * 10)],
-            x: [0, (seededRand(p.id * 41) - 0.5) * 60],
+            y: [0, -(90 + p.size * 12)],
+            x: [0, (seededRand(p.id * 41) - 0.5) * 70],
             opacity: [p.opacity, p.opacity, 0],
-            scale: [1, 1.5, 0],
+            scale: [1, 1.6, 0],
           }}
-          transition={{
-            duration: 1 + seededRand(p.id * 43) * 2,
-            delay: p.delay * 0.5,
-            repeat: Infinity,
-            ease: 'easeOut',
-          }}
+          transition={{ duration: 1 + seededRand(p.id * 43) * 2.5, delay: p.delay * 0.4, repeat: Infinity, ease: 'easeOut' }}
         />
       ))}
     </div>
@@ -176,7 +154,7 @@ function SparkParticles() {
 }
 
 function LeafParticles() {
-  const particles = useParticles(16, 5);
+  const particles = useParticles(18, 5);
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((p) => (
@@ -195,27 +173,43 @@ function LeafParticles() {
             opacity: p.opacity,
           }}
           animate={{
-            y: [0, 600 + p.size * 20],
-            x: [0, (seededRand(p.id * 23) - 0.5) * 120, (seededRand(p.id * 29) - 0.5) * 80, 0],
-            rotate: [0, seededRand(p.id * 31) * 360 * (seededRand(p.id) > 0.5 ? 1 : -1)],
+            y: [0, 650 + p.size * 22],
+            x: [0, (seededRand(p.id * 23) - 0.5) * 130, (seededRand(p.id * 29) - 0.5) * 90, 0],
+            rotate: [0, seededRand(p.id * 31) * 380 * (seededRand(p.id) > 0.5 ? 1 : -1)],
             opacity: [0, p.opacity, p.opacity, 0],
           }}
-          transition={{
-            duration: p.duration * 1.5,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
+          transition={{ duration: p.duration * 1.7, delay: p.delay, repeat: Infinity, ease: 'linear' }}
         />
       ))}
     </div>
   );
 }
 
+const THEME_BG_IMAGE: Record<string, string> = {
+  arcane: 'bg-arcane.png',
+  tavern: 'bg-tavern.png',
+  tome: 'bg-tome.png',
+  apothecary: 'bg-apothecary.png',
+  armory: 'bg-armory.png',
+  grove: 'bg-grove.png',
+};
+
+const THEME_BG_OPACITY: Record<string, number> = {
+  arcane: 0.22,
+  tavern: 0.28,
+  tome: 0.20,
+  apothecary: 0.22,
+  armory: 0.25,
+  grove: 0.22,
+};
+
 export function AnimatedBackground() {
   const { theme } = useTheme();
+  const imgFile = THEME_BG_IMAGE[theme.id];
+  const imgOpacity = THEME_BG_OPACITY[theme.id] ?? 0.2;
+  const BASE_URL = import.meta.env.BASE_URL || '/';
 
-  const particles: Record<ParticleType, JSX.Element | null> = {
+  const particles: Partial<Record<ParticleType, JSX.Element | null>> = {
     embers: <EmberParticles />,
     runes: <RuneParticles color={theme.accentGlowColor} />,
     bubbles: <BubbleParticles />,
@@ -225,11 +219,34 @@ export function AnimatedBackground() {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-0 pointer-events-none"
-      style={{ background: theme.backgroundGradient }}
-    >
-      {particles[theme.particleType]}
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* Base gradient */}
+      <div className="absolute inset-0" style={{ background: theme.backgroundGradient }} />
+
+      {/* AI-generated background image */}
+      {imgFile && (
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-700"
+          style={{
+            backgroundImage: `url(${BASE_URL}images/${imgFile})`,
+            opacity: imgOpacity,
+            mixBlendMode: 'luminosity',
+          }}
+        />
+      )}
+
+      {/* Dark vignette overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.6) 100%)',
+        }}
+      />
+
+      {/* Particle layer */}
+      <div className="absolute inset-0">
+        {particles[theme.particleType]}
+      </div>
     </div>
   );
 }

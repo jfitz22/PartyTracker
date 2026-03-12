@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { AnimatedBackground } from "@/components/animated-background";
+import { ThemeStyles } from "@/components/theme-styles";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import CharacterHub from "@/pages/character-hub";
@@ -27,6 +28,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
+          <ThemeStyles />
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <AnimatedBackground />
             <div className="relative z-10">
