@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Attention Dragons API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: characters
+    description: Character operations
+  - name: items
+    description: Inventory item operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,274 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /characters:
+    get:
+      operationId: listCharacters
+      tags: [characters]
+      summary: List all characters
+      responses:
+        "200":
+          description: List of characters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Character"
+    post:
+      operationId: createCharacter
+      tags: [characters]
+      summary: Create a new character
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCharacterRequest"
+      responses:
+        "201":
+          description: Character created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+
+  /characters/{characterId}:
+    get:
+      operationId: getCharacter
+      tags: [characters]
+      summary: Get a character by ID
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Character found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+        "404":
+          description: Character not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /characters/{characterId}/rest:
+    post:
+      operationId: triggerRest
+      tags: [characters]
+      summary: Trigger a rest for a character (recharges items)
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestRequest"
+      responses:
+        "200":
+          description: Rest triggered, returns updated items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+
+  /characters/{characterId}/items:
+    get:
+      operationId: listItems
+      tags: [items]
+      summary: List all items for a character
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: showConsumed
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryItem"
+    post:
+      operationId: createItem
+      tags: [items]
+      summary: Add a new item to a character's inventory
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateItemRequest"
+      responses:
+        "201":
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+
+  /characters/{characterId}/items/{itemId}:
+    get:
+      operationId: getItem
+      tags: [items]
+      summary: Get a specific item
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Item found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+        "404":
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateItem
+      tags: [items]
+      summary: Update an item
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateItemRequest"
+      responses:
+        "200":
+          description: Item updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+    delete:
+      operationId: deleteItem
+      tags: [items]
+      summary: Delete an item
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Item deleted
+
+  /characters/{characterId}/items/{itemId}/use:
+    post:
+      operationId: useItem
+      tags: [items]
+      summary: Use/consume a charge or fully consume an item
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Item used
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+
+  /characters/{characterId}/items/{itemId}/equip:
+    post:
+      operationId: toggleEquip
+      tags: [items]
+      summary: Toggle equipped/stored status
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Equip status toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryItem"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +306,214 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Character:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        playerName:
+          type: string
+        characterClass:
+          type: string
+        race:
+          type: string
+        level:
+          type: integer
+        avatarUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - playerName
+        - characterClass
+        - race
+        - level
+        - createdAt
+
+    CreateCharacterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        playerName:
+          type: string
+        characterClass:
+          type: string
+        race:
+          type: string
+        level:
+          type: integer
+        avatarUrl:
+          type: string
+          nullable: true
+      required:
+        - name
+        - playerName
+        - characterClass
+        - race
+        - level
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        characterId:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+            - weapons
+            - armor
+            - magic_items
+            - scrolls
+            - potions
+            - misc
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        isEquipped:
+          type: boolean
+        maxCharges:
+          type: integer
+          nullable: true
+        currentCharges:
+          type: integer
+          nullable: true
+        rechargeOn:
+          type: string
+          enum: [short_rest, long_rest, dawn, never]
+          nullable: true
+        rarity:
+          type: string
+          enum: [common, uncommon, rare, very_rare, legendary]
+          nullable: true
+        isConsumable:
+          type: boolean
+        isConsumed:
+          type: boolean
+        isTrashed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - characterId
+        - name
+        - category
+        - description
+        - isEquipped
+        - isConsumable
+        - isConsumed
+        - isTrashed
+        - createdAt
+
+    CreateItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+            - weapons
+            - armor
+            - magic_items
+            - scrolls
+            - potions
+            - misc
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        isEquipped:
+          type: boolean
+        maxCharges:
+          type: integer
+          nullable: true
+        currentCharges:
+          type: integer
+          nullable: true
+        rechargeOn:
+          type: string
+          enum: [short_rest, long_rest, dawn, never]
+          nullable: true
+        rarity:
+          type: string
+          enum: [common, uncommon, rare, very_rare, legendary]
+          nullable: true
+        isConsumable:
+          type: boolean
+      required:
+        - name
+        - category
+        - description
+        - isEquipped
+        - isConsumable
+
+    UpdateItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum:
+            - weapons
+            - armor
+            - magic_items
+            - scrolls
+            - potions
+            - misc
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        isEquipped:
+          type: boolean
+        maxCharges:
+          type: integer
+          nullable: true
+        currentCharges:
+          type: integer
+          nullable: true
+        rechargeOn:
+          type: string
+          enum: [short_rest, long_rest, dawn, never]
+          nullable: true
+        rarity:
+          type: string
+          enum: [common, uncommon, rare, very_rare, legendary]
+          nullable: true
+        isConsumable:
+          type: boolean
+
+    RestRequest:
+      type: object
+      properties:
+        restType:
+          type: string
+          enum: [short_rest, long_rest]
+      required:
+        - restType

@@ -2,7 +2,7 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+Attention Dragons — Player Character Hub for tabletop RPG parties. Phase 1 implements the Inventory System. Built as a pnpm workspace monorepo using TypeScript.
 
 ## Stack
 
@@ -15,25 +15,47 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Frontend**: React + Vite + Tailwind CSS + shadcn/ui
+
+## Application
+
+**Attention Dragons** is a multi-player web app where each tabletop RPG player manages their character's inventory via a personal hub. Features:
+
+- Character selection screen with "Forge New Hero" capability
+- Per-character inventory hub with dark fantasy aesthetic
+- Item categories: Arms & Armaments (weapons), Vestments (armor), Curios & Trinkets (magic_items), Arcane Scrolls (scrolls), Alchemical Stores (potions), Mundane Goods (misc)
+- Item cards with rarity color-coding (Common → Legendary)
+- Charge tracking pip system with recharge conditions (Short Rest, Long Rest, Dawn, Never)
+- Short Rest / Long Rest rest triggers that auto-recharge eligible items
+- Consume / Use Charge actions on items
+- Equipped vs. Stored visual states
+- Add/Edit item modal with full form
+- Search/filter by name or category
+- Consumed items graveyard section
 
 ## Structure
 
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── attention-dragons/  # React + Vite frontend (at route /)
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
 │   ├── api-zod/            # Generated Zod schemas from OpenAPI
 │   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
+├── scripts/                # Utility scripts
+├── pnpm-workspace.yaml     # pnpm workspace
+├── tsconfig.base.json      # Shared TS options
 ├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+└── package.json            # Root package
 ```
+
+## Database Schema
+
+- `characters` — character profiles (name, playerName, characterClass, race, level, avatarUrl)
+- `items` — inventory items (name, category, description, imageUrl, isEquipped, maxCharges, currentCharges, rechargeOn, rarity, isConsumable, isConsumed, isTrashed)
 
 ## TypeScript & Composite Projects
 
@@ -56,41 +78,37 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+- Routes: `src/routes/index.ts` mounts sub-routers
+  - `health.ts` — GET /api/healthz
+  - `characters.ts` — GET/POST /api/characters, GET /api/characters/:id, POST /api/characters/:id/rest
+  - `items.ts` — full CRUD for /api/characters/:id/items + use and equip actions
+
+### `artifacts/attention-dragons` (`@workspace/attention-dragons`)
+
+React + Vite frontend. Routes:
+- `/` — Character selection screen
+- `/character/:characterId` — Character inventory hub
 
 ### `lib/db` (`@workspace/db`)
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
+Database layer using Drizzle ORM with PostgreSQL.
 
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
-
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
+- `src/schema/characters.ts` — Characters table
+- `src/schema/items.ts` — Items table with enums for category, rarity, rechargeOn
+- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`)
 
 ### `lib/api-spec` (`@workspace/api-spec`)
 
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
+Owns the OpenAPI 3.1 spec (`openapi.yaml`) and Orval config. Run codegen: `pnpm --filter @workspace/api-spec run codegen`
 
 ### `lib/api-zod` (`@workspace/api-zod`)
 
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
+Generated Zod schemas from the OpenAPI spec. Used by `api-server` for validation.
 
 ### `lib/api-client-react` (`@workspace/api-client-react`)
 
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
+Generated React Query hooks and fetch client from the OpenAPI spec. Import from `@workspace/api-client-react` (barrel export).
 
 ### `scripts` (`@workspace/scripts`)
 
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+Utility scripts package.

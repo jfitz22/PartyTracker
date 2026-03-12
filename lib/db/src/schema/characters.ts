@@ -1,0 +1,18 @@
+import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod/v4";
+
+export const charactersTable = pgTable("characters", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  playerName: text("player_name").notNull(),
+  characterClass: text("character_class").notNull(),
+  race: text("race").notNull(),
+  level: integer("level").notNull().default(1),
+  avatarUrl: text("avatar_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertCharacterSchema = createInsertSchema(charactersTable).omit({ id: true, createdAt: true });
+export type InsertCharacter = z.infer<typeof insertCharacterSchema>;
+export type Character = typeof charactersTable.$inferSelect;
