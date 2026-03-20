@@ -278,6 +278,16 @@ export interface CreateJournalEntryRequest {
   body: string;
 }
 
+export interface Party {
+  id: number;
+  name: string;
+  createdAt: string;
+}
+
+export interface CreatePartyRequest {
+  name: string;
+}
+
 export type QuestStatus = (typeof QuestStatus)[keyof typeof QuestStatus];
 
 export const QuestStatus = {
@@ -306,7 +316,6 @@ export const CreateQuestRequestStatus = {
 } as const;
 
 export interface CreateQuestRequest {
-  partyId?: number | null;
   title: string;
   description: string;
   status?: CreateQuestRequestStatus;
@@ -325,7 +334,6 @@ export interface UpdateQuestRequest {
   title?: string;
   description?: string;
   status?: UpdateQuestRequestStatus;
-  partyId?: number | null;
 }
 
 export type ListItemsParams = {
@@ -335,7 +343,6 @@ export type ListItemsParams = {
 };
 
 export type ListQuestsParams = {
-  partyId?: number;
   status?: ListQuestsStatus;
 };
 

@@ -1,10 +1,11 @@
 import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { partiesTable } from "./parties";
 
 export const charactersTable = pgTable("characters", {
   id: serial("id").primaryKey(),
-  partyId: integer("party_id"),
+  partyId: integer("party_id").references(() => partiesTable.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   playerName: text("player_name").notNull(),
   characterClass: text("character_class").notNull(),

@@ -10,6 +10,7 @@ import { EditCharacterDialog } from '@/components/edit-character-dialog';
 import { ThemeSelector } from '@/components/theme-selector';
 import { JournalSection } from '@/components/journal-section';
 import { QuestLogSection } from '@/components/quest-log-section';
+import { useDefaultParty } from '@/hooks/use-default-party';
 import { CATEGORY_MAP } from '@/lib/constants';
 import { ArrowLeft, Moon, Search, Sun, Plus, PackageOpen, Settings, Backpack, Shield, Box, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -31,6 +32,7 @@ export default function CharacterHub() {
 
   const { data: character, isLoading: charLoading } = useGetCharacter(id);
   const { data: items = [], isLoading: itemsLoading } = useListItems(id);
+  const { partyId } = useDefaultParty();
 
   const { mutate: triggerRest, isPending: isResting } = useTriggerRest({
     mutation: {
@@ -283,7 +285,7 @@ export default function CharacterHub() {
 
         {/* SECTION D: QUEST LOG (read-only for players) */}
         <div className="mt-12">
-          <QuestLogSection isDm={false} />
+          {partyId !== null && <QuestLogSection partyId={partyId} isDm={false} />}
         </div>
 
       </div>

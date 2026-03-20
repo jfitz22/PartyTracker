@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { itemsTable } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
+import type { ItemCategory, ItemLocation, RechargeOn, Rarity } from "@workspace/db/schema";
 import {
   ListItemsParams,
   ListItemsQueryParams,
@@ -64,24 +65,24 @@ router.post("/", async (req, res) => {
   const { characterId } = paramsParsed.data;
   const data = bodyParsed.data;
 
-  const location = data.location ?? (data.isEquipped ? "equipped" : "carried");
+  const location = (data.location ?? (data.isEquipped ? "equipped" : "carried")) as ItemLocation;
 
   const [item] = await db
     .insert(itemsTable)
     .values({
       characterId,
       name: data.name,
-      category: data.category as any,
+      category: data.category as ItemCategory,
       description: data.description,
-      notes: (data as any).notes ?? null,
+      notes: data.notes ?? null,
       imageUrl: data.imageUrl ?? null,
-      quantity: (data as any).quantity ?? 1,
-      location: location as any,
+      quantity: data.quantity ?? 1,
+      location,
       isEquipped: location === "equipped",
       maxCharges: data.maxCharges ?? null,
-      currentCharges: data.maxCharges ?? null,
-      rechargeOn: data.rechargeOn as any ?? null,
-      rarity: data.rarity as any ?? null,
+      currentCharges: data.currentCharges ?? data.maxCharges ?? null,
+      rechargeOn: (data.rechargeOn ?? null) as RechargeOn | null,
+      rarity: (data.rarity ?? null) as Rarity | null,
       isConsumable: data.isConsumable,
       isConsumed: false,
       isTrashed: false,
@@ -125,24 +126,24 @@ router.put("/:itemId", async (req, res) => {
   const { itemId, characterId } = paramsParsed.data;
   const data = bodyParsed.success ? bodyParsed.data : {};
 
-  const updateData: Record<string, any> = { updatedAt: new Date() };
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
   if (data.name !== undefined) updateData.name = data.name;
-  if (data.category !== undefined) updateData.category = data.category;
+  if (data.category !== undefined) updateData.category = data.category as ItemCategory;
   if (data.description !== undefined) updateData.description = data.description;
-  if ((data as any).notes !== undefined) updateData.notes = (data as any).notes;
-  if ((data as any).quantity !== undefined) updateData.quantity = (data as any).quantity;
-  if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+  if (data.notes !== undefined) updateData.notes = data.notes ?? null;
+  if (data.quantity !== undefined) updateData.quantity = data.quantity;
+  if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl ?? null;
   if (data.location !== undefined) {
-    updateData.location = data.location;
+    updateData.location = data.location as ItemLocation;
     updateData.isEquipped = data.location === "equipped";
   } else if (data.isEquipped !== undefined) {
     updateData.isEquipped = data.isEquipped;
-    updateData.location = data.isEquipped ? "equipped" : "carried";
+    updateData.location = (data.isEquipped ? "equipped" : "carried") as ItemLocation;
   }
-  if (data.maxCharges !== undefined) updateData.maxCharges = data.maxCharges;
-  if ((data as any).currentCharges !== undefined) updateData.currentCharges = (data as any).currentCharges;
-  if (data.rechargeOn !== undefined) updateData.rechargeOn = data.rechargeOn;
-  if (data.rarity !== undefined) updateData.rarity = data.rarity;
+  if (data.maxCharges !== undefined) updateData.maxCharges = data.maxCharges ?? null;
+  if (data.currentCharges !== undefined) updateData.currentCharges = data.currentCharges ?? null;
+  if (data.rechargeOn !== undefined) updateData.rechargeOn = (data.rechargeOn ?? null) as RechargeOn | null;
+  if (data.rarity !== undefined) updateData.rarity = (data.rarity ?? null) as Rarity | null;
   if (data.isConsumable !== undefined) updateData.isConsumable = data.isConsumable;
 
   const [item] = await db
@@ -194,18 +195,18 @@ router.post("/:itemId/use", async (req, res) => {
     return;
   }
 
-  const updateData: Record<string, any> = { updatedAt: new Date() };
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
   if (existing.isConsumable) {
     updateData.isConsumed = true;
     updateData.isEquipped = false;
-    updateData.location = "stored";
+    updateData.location = "stored" as ItemLocation;
   } else if (existing.currentCharges != null && existing.currentCharges > 0) {
     updateData.currentCharges = existing.currentCharges - 1;
     if (existing.rechargeOn === "never" && updateData.currentCharges === 0) {
       updateData.isConsumed = true;
       updateData.isEquipped = false;
-      updateData.location = "stored";
+      updateData.location = "stored" as ItemLocation;
     }
   }
 
@@ -229,12 +230,12 @@ router.post("/:itemId/location", async (req, res) => {
     return;
   }
   const { itemId, characterId } = paramsParsed.data;
-  const { location } = bodyParsed.data;
+  const location = bodyParsed.data.location as ItemLocation;
 
   const [item] = await db
     .update(itemsTable)
     .set({
-      location: location as any,
+      location,
       isEquipped: location === "equipped",
       updatedAt: new Date(),
     })

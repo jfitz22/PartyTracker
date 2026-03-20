@@ -8,7 +8,6 @@
 import type { CreateQuestRequestStatus } from "./createQuestRequestStatus";
 
 export interface CreateQuestRequest {
-  partyId?: number | null;
   title: string;
   description: string;
   status?: CreateQuestRequestStatus;

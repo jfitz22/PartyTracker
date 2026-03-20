@@ -5,8 +5,9 @@
  * Attention Dragons API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ListQuestsStatus } from "./listQuestsStatus";
 
-export type ListQuestsParams = {
-  status?: ListQuestsStatus;
-};
+export interface Party {
+  id: number;
+  name: string;
+  createdAt: Date;
+}

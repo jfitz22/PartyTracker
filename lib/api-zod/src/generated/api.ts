@@ -487,10 +487,30 @@ export const DeleteJournalEntryParams = zod.object({
 });
 
 /**
- * @summary List all quests
+ * @summary List all parties
  */
+export const ListPartiesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  createdAt: zod.date(),
+});
+export const ListPartiesResponse = zod.array(ListPartiesResponseItem);
+
+/**
+ * @summary Create a new party
+ */
+export const CreatePartyBody = zod.object({
+  name: zod.string(),
+});
+
+/**
+ * @summary List quests for a party
+ */
+export const ListQuestsParams = zod.object({
+  partyId: zod.coerce.number(),
+});
+
 export const ListQuestsQueryParams = zod.object({
-  partyId: zod.coerce.number().optional(),
   status: zod.enum(["active", "completed", "failed"]).optional(),
 });
 
@@ -506,10 +526,13 @@ export const ListQuestsResponseItem = zod.object({
 export const ListQuestsResponse = zod.array(ListQuestsResponseItem);
 
 /**
- * @summary Create a new quest
+ * @summary Create a new quest for a party
  */
+export const CreateQuestParams = zod.object({
+  partyId: zod.coerce.number(),
+});
+
 export const CreateQuestBody = zod.object({
-  partyId: zod.number().nullish(),
   title: zod.string(),
   description: zod.string(),
   status: zod.enum(["active", "completed", "failed"]).optional(),
@@ -519,6 +542,7 @@ export const CreateQuestBody = zod.object({
  * @summary Get a specific quest
  */
 export const GetQuestParams = zod.object({
+  partyId: zod.coerce.number(),
   questId: zod.coerce.number(),
 });
 
@@ -536,6 +560,7 @@ export const GetQuestResponse = zod.object({
  * @summary Update a quest
  */
 export const UpdateQuestParams = zod.object({
+  partyId: zod.coerce.number(),
   questId: zod.coerce.number(),
 });
 
@@ -543,7 +568,6 @@ export const UpdateQuestBody = zod.object({
   title: zod.string().optional(),
   description: zod.string().optional(),
   status: zod.enum(["active", "completed", "failed"]).optional(),
-  partyId: zod.number().nullish(),
 });
 
 export const UpdateQuestResponse = zod.object({
@@ -560,6 +584,7 @@ export const UpdateQuestResponse = zod.object({
  * @summary Delete a quest
  */
 export const DeleteQuestParams = zod.object({
+  partyId: zod.coerce.number(),
   questId: zod.coerce.number(),
 });
 

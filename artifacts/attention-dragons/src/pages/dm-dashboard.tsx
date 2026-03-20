@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { AddItemDialog } from '@/components/add-item-dialog';
 import { EditCharacterDialog } from '@/components/edit-character-dialog';
 import { QuestLogSection } from '@/components/quest-log-section';
+import { useDefaultParty } from '@/hooks/use-default-party';
 import { CATEGORY_MAP, RARITY_MAP, RECHARGE_MAP } from '@/lib/constants';
 import { ArrowLeft, Crown, Settings, Edit, Backpack, Shield, Box, ChevronDown, ChevronUp, Package } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme-selector';
@@ -16,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DmDashboard() {
   const { data: characters = [], isLoading } = useGetDmOverview();
+  const { partyId } = useDefaultParty();
 
   const [editingCharacter, setEditingCharacter] = useState<CharacterWithItems | null>(null);
   const [editingItem, setEditingItem] = useState<{ characterId: number; item: InventoryItem } | null>(null);
@@ -60,7 +62,7 @@ export default function DmDashboard() {
 
         {/* Quest Log - DM can manage */}
         <div className="mb-12">
-          <QuestLogSection isDm={true} />
+          {partyId !== null && <QuestLogSection partyId={partyId} isDm={true} />}
         </div>
 
         {/* Characters */}

@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { CATEGORY_MAP, RARITY_MAP, RECHARGE_MAP } from '@/lib/constants';
 import { 
   InventoryItem,
+  CreateItemRequest,
   CreateItemRequestCategory, 
   CreateItemRequestRarity, 
   CreateItemRequestRechargeOn,
@@ -112,18 +113,25 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
 
   const onSubmit = (data: FormValues) => {
     const isEquipped = data.location === CreateItemRequestLocation.equipped;
-    
-    const payload = {
-      ...data,
-      isEquipped,
+
+    const createPayload: CreateItemRequest = {
+      name: data.name,
+      category: data.category,
+      description: data.description,
       imageUrl: data.imageUrl || null,
-      ...( !isEditing && data.maxCharges ? { currentCharges: data.maxCharges } : {} )
+      location: data.location,
+      isEquipped,
+      isConsumable: data.isConsumable,
+      rarity: data.rarity ?? null,
+      maxCharges: data.maxCharges ?? null,
+      rechargeOn: data.rechargeOn ?? null,
+      currentCharges: data.maxCharges ?? null,
     };
 
     if (isEditing) {
-      updateItem({ characterId, itemId: editingItem.id, data: payload });
+      updateItem({ characterId, itemId: editingItem.id, data: createPayload });
     } else {
-      createItem({ characterId, data: payload as any });
+      createItem({ characterId, data: createPayload });
     }
   };
 

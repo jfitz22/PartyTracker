@@ -11,5 +11,4 @@ export interface UpdateQuestRequest {
   title?: string;
   description?: string;
   status?: UpdateQuestRequestStatus;
-  partyId?: number | null;
 }

@@ -24,6 +24,7 @@ const STATUS_CONFIG = {
 };
 
 interface QuestLogSectionProps {
+  partyId: number;
   isDm?: boolean;
 }
 
@@ -32,14 +33,14 @@ interface QuestDialogState {
   editing: Quest | null;
 }
 
-export function QuestLogSection({ isDm = false }: QuestLogSectionProps) {
+export function QuestLogSection({ partyId, isDm = false }: QuestLogSectionProps) {
   const queryClient = useQueryClient();
-  const { data: quests = [], isLoading } = useListQuests();
+  const { data: quests = [], isLoading } = useListQuests(partyId);
   const [isOpen, setIsOpen] = useState(false);
   const [dialog, setDialog] = useState<QuestDialogState>({ open: false, editing: null });
   const [expandedQuest, setExpandedQuest] = useState<number | null>(null);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListQuestsQueryKey() });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListQuestsQueryKey(partyId) });
 
   const { mutate: createQuest, isPending: isCreating } = useCreateQuest({
     mutation: { onSuccess: () => { invalidate(); setDialog({ open: false, editing: null }); } }
@@ -53,7 +54,7 @@ export function QuestLogSection({ isDm = false }: QuestLogSectionProps) {
 
   const handleDelete = (questId: number) => {
     if (confirm("Delete this quest?")) {
-      deleteQuest({ questId });
+      deleteQuest({ partyId, questId });
     }
   };
 
@@ -109,7 +110,7 @@ export function QuestLogSection({ isDm = false }: QuestLogSectionProps) {
                       onToggle={() => setExpandedQuest(expandedQuest === quest.id ? null : quest.id)}
                       onEdit={() => openEdit(quest)}
                       onDelete={() => handleDelete(quest.id)}
-                      onStatusChange={(status) => updateQuest({ questId: quest.id, data: { status } })}
+                      onStatusChange={(status) => updateQuest({ partyId, questId: quest.id, data: { status } })}
                     />
                   ))}
                 </div>
@@ -128,7 +129,7 @@ export function QuestLogSection({ isDm = false }: QuestLogSectionProps) {
                         onToggle={() => setExpandedQuest(expandedQuest === quest.id ? null : quest.id)}
                         onEdit={() => openEdit(quest)}
                         onDelete={() => handleDelete(quest.id)}
-                        onStatusChange={(status) => updateQuest({ questId: quest.id, data: { status } })}
+                        onStatusChange={(status) => updateQuest({ partyId, questId: quest.id, data: { status } })}
                       />
                     ))}
                   </div>
@@ -146,9 +147,9 @@ export function QuestLogSection({ isDm = false }: QuestLogSectionProps) {
           onClose={closeDialog}
           onSave={({ title, description, status }) => {
             if (dialog.editing) {
-              updateQuest({ questId: dialog.editing.id, data: { title, description, status } });
+              updateQuest({ partyId, questId: dialog.editing.id, data: { title, description, status } });
             } else {
-              createQuest({ data: { title, description, status: status as CreateQuestRequestStatus } });
+              createQuest({ partyId, data: { title, description, status: status as CreateQuestRequestStatus } });
             }
           }}
           isPending={isCreating || isUpdating}

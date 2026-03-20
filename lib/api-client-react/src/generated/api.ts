@@ -22,6 +22,7 @@ import type {
   CreateCharacterRequest,
   CreateItemRequest,
   CreateJournalEntryRequest,
+  CreatePartyRequest,
   CreateQuestRequest,
   ErrorResponse,
   HealthStatus,
@@ -30,6 +31,7 @@ import type {
   ListItemsParams,
   ListQuestsParams,
   MoveItemRequest,
+  Party,
   Quest,
   RestRequest,
   UpdateItemRequest,
@@ -1650,9 +1652,171 @@ export const useDeleteJournalEntry = <
 };
 
 /**
- * @summary List all quests
+ * @summary List all parties
  */
-export const getListQuestsUrl = (params?: ListQuestsParams) => {
+export const getListPartiesUrl = () => {
+  return `/api/parties`;
+};
+
+export const listParties = async (options?: RequestInit): Promise<Party[]> => {
+  return customFetch<Party[]>(getListPartiesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListPartiesQueryKey = () => {
+  return [`/api/parties`] as const;
+};
+
+export const getListPartiesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listParties>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listParties>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListPartiesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listParties>>> = ({
+    signal,
+  }) => listParties({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listParties>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListPartiesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listParties>>
+>;
+export type ListPartiesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all parties
+ */
+
+export function useListParties<
+  TData = Awaited<ReturnType<typeof listParties>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listParties>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListPartiesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new party
+ */
+export const getCreatePartyUrl = () => {
+  return `/api/parties`;
+};
+
+export const createParty = async (
+  createPartyRequest: CreatePartyRequest,
+  options?: RequestInit,
+): Promise<Party> => {
+  return customFetch<Party>(getCreatePartyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createPartyRequest),
+  });
+};
+
+export const getCreatePartyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createParty>>,
+    TError,
+    { data: BodyType<CreatePartyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createParty>>,
+  TError,
+  { data: BodyType<CreatePartyRequest> },
+  TContext
+> => {
+  const mutationKey = ["createParty"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createParty>>,
+    { data: BodyType<CreatePartyRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createParty(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreatePartyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createParty>>
+>;
+export type CreatePartyMutationBody = BodyType<CreatePartyRequest>;
+export type CreatePartyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new party
+ */
+export const useCreateParty = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createParty>>,
+    TError,
+    { data: BodyType<CreatePartyRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createParty>>,
+  TError,
+  { data: BodyType<CreatePartyRequest> },
+  TContext
+> => {
+  return useMutation(getCreatePartyMutationOptions(options));
+};
+
+/**
+ * @summary List quests for a party
+ */
+export const getListQuestsUrl = (
+  partyId: number,
+  params?: ListQuestsParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -1664,28 +1828,36 @@ export const getListQuestsUrl = (params?: ListQuestsParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/quests?${stringifiedParams}`
-    : `/api/quests`;
+    ? `/api/parties/${partyId}/quests?${stringifiedParams}`
+    : `/api/parties/${partyId}/quests`;
 };
 
 export const listQuests = async (
+  partyId: number,
   params?: ListQuestsParams,
   options?: RequestInit,
 ): Promise<Quest[]> => {
-  return customFetch<Quest[]>(getListQuestsUrl(params), {
+  return customFetch<Quest[]>(getListQuestsUrl(partyId, params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getListQuestsQueryKey = (params?: ListQuestsParams) => {
-  return [`/api/quests`, ...(params ? [params] : [])] as const;
+export const getListQuestsQueryKey = (
+  partyId: number,
+  params?: ListQuestsParams,
+) => {
+  return [
+    `/api/parties/${partyId}/quests`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
 export const getListQuestsQueryOptions = <
   TData = Awaited<ReturnType<typeof listQuests>>,
   TError = ErrorType<unknown>,
 >(
+  partyId: number,
   params?: ListQuestsParams,
   options?: {
     query?: UseQueryOptions<
@@ -1698,13 +1870,19 @@ export const getListQuestsQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getListQuestsQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getListQuestsQueryKey(partyId, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof listQuests>>> = ({
     signal,
-  }) => listQuests(params, { signal, ...requestOptions });
+  }) => listQuests(partyId, params, { signal, ...requestOptions });
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!partyId,
+    ...queryOptions,
+  } as UseQueryOptions<
     Awaited<ReturnType<typeof listQuests>>,
     TError,
     TData
@@ -1717,13 +1895,14 @@ export type ListQuestsQueryResult = NonNullable<
 export type ListQuestsQueryError = ErrorType<unknown>;
 
 /**
- * @summary List all quests
+ * @summary List quests for a party
  */
 
 export function useListQuests<
   TData = Awaited<ReturnType<typeof listQuests>>,
   TError = ErrorType<unknown>,
 >(
+  partyId: number,
   params?: ListQuestsParams,
   options?: {
     query?: UseQueryOptions<
@@ -1734,7 +1913,7 @@ export function useListQuests<
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getListQuestsQueryOptions(params, options);
+  const queryOptions = getListQuestsQueryOptions(partyId, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1744,17 +1923,18 @@ export function useListQuests<
 }
 
 /**
- * @summary Create a new quest
+ * @summary Create a new quest for a party
  */
-export const getCreateQuestUrl = () => {
-  return `/api/quests`;
+export const getCreateQuestUrl = (partyId: number) => {
+  return `/api/parties/${partyId}/quests`;
 };
 
 export const createQuest = async (
+  partyId: number,
   createQuestRequest: CreateQuestRequest,
   options?: RequestInit,
 ): Promise<Quest> => {
-  return customFetch<Quest>(getCreateQuestUrl(), {
+  return customFetch<Quest>(getCreateQuestUrl(partyId), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1769,14 +1949,14 @@ export const getCreateQuestMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createQuest>>,
     TError,
-    { data: BodyType<CreateQuestRequest> },
+    { partyId: number; data: BodyType<CreateQuestRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createQuest>>,
   TError,
-  { data: BodyType<CreateQuestRequest> },
+  { partyId: number; data: BodyType<CreateQuestRequest> },
   TContext
 > => {
   const mutationKey = ["createQuest"];
@@ -1790,11 +1970,11 @@ export const getCreateQuestMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createQuest>>,
-    { data: BodyType<CreateQuestRequest> }
+    { partyId: number; data: BodyType<CreateQuestRequest> }
   > = (props) => {
-    const { data } = props ?? {};
+    const { partyId, data } = props ?? {};
 
-    return createQuest(data, requestOptions);
+    return createQuest(partyId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1807,7 +1987,7 @@ export type CreateQuestMutationBody = BodyType<CreateQuestRequest>;
 export type CreateQuestMutationError = ErrorType<unknown>;
 
 /**
- * @summary Create a new quest
+ * @summary Create a new quest for a party
  */
 export const useCreateQuest = <
   TError = ErrorType<unknown>,
@@ -1816,14 +1996,14 @@ export const useCreateQuest = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createQuest>>,
     TError,
-    { data: BodyType<CreateQuestRequest> },
+    { partyId: number; data: BodyType<CreateQuestRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof createQuest>>,
   TError,
-  { data: BodyType<CreateQuestRequest> },
+  { partyId: number; data: BodyType<CreateQuestRequest> },
   TContext
 > => {
   return useMutation(getCreateQuestMutationOptions(options));
@@ -1832,28 +2012,30 @@ export const useCreateQuest = <
 /**
  * @summary Get a specific quest
  */
-export const getGetQuestUrl = (questId: number) => {
-  return `/api/quests/${questId}`;
+export const getGetQuestUrl = (partyId: number, questId: number) => {
+  return `/api/parties/${partyId}/quests/${questId}`;
 };
 
 export const getQuest = async (
+  partyId: number,
   questId: number,
   options?: RequestInit,
 ): Promise<Quest> => {
-  return customFetch<Quest>(getGetQuestUrl(questId), {
+  return customFetch<Quest>(getGetQuestUrl(partyId, questId), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetQuestQueryKey = (questId: number) => {
-  return [`/api/quests/${questId}`] as const;
+export const getGetQuestQueryKey = (partyId: number, questId: number) => {
+  return [`/api/parties/${partyId}/quests/${questId}`] as const;
 };
 
 export const getGetQuestQueryOptions = <
   TData = Awaited<ReturnType<typeof getQuest>>,
   TError = ErrorType<ErrorResponse>,
 >(
+  partyId: number,
   questId: number,
   options?: {
     query?: UseQueryOptions<
@@ -1866,16 +2048,17 @@ export const getGetQuestQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetQuestQueryKey(questId);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetQuestQueryKey(partyId, questId);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getQuest>>> = ({
     signal,
-  }) => getQuest(questId, { signal, ...requestOptions });
+  }) => getQuest(partyId, questId, { signal, ...requestOptions });
 
   return {
     queryKey,
     queryFn,
-    enabled: !!questId,
+    enabled: !!(partyId && questId),
     ...queryOptions,
   } as UseQueryOptions<Awaited<ReturnType<typeof getQuest>>, TError, TData> & {
     queryKey: QueryKey;
@@ -1895,6 +2078,7 @@ export function useGetQuest<
   TData = Awaited<ReturnType<typeof getQuest>>,
   TError = ErrorType<ErrorResponse>,
 >(
+  partyId: number,
   questId: number,
   options?: {
     query?: UseQueryOptions<
@@ -1905,7 +2089,7 @@ export function useGetQuest<
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetQuestQueryOptions(questId, options);
+  const queryOptions = getGetQuestQueryOptions(partyId, questId, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1917,16 +2101,17 @@ export function useGetQuest<
 /**
  * @summary Update a quest
  */
-export const getUpdateQuestUrl = (questId: number) => {
-  return `/api/quests/${questId}`;
+export const getUpdateQuestUrl = (partyId: number, questId: number) => {
+  return `/api/parties/${partyId}/quests/${questId}`;
 };
 
 export const updateQuest = async (
+  partyId: number,
   questId: number,
   updateQuestRequest: UpdateQuestRequest,
   options?: RequestInit,
 ): Promise<Quest> => {
-  return customFetch<Quest>(getUpdateQuestUrl(questId), {
+  return customFetch<Quest>(getUpdateQuestUrl(partyId, questId), {
     ...options,
     method: "PUT",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1941,14 +2126,14 @@ export const getUpdateQuestMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateQuest>>,
     TError,
-    { questId: number; data: BodyType<UpdateQuestRequest> },
+    { partyId: number; questId: number; data: BodyType<UpdateQuestRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateQuest>>,
   TError,
-  { questId: number; data: BodyType<UpdateQuestRequest> },
+  { partyId: number; questId: number; data: BodyType<UpdateQuestRequest> },
   TContext
 > => {
   const mutationKey = ["updateQuest"];
@@ -1962,11 +2147,11 @@ export const getUpdateQuestMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateQuest>>,
-    { questId: number; data: BodyType<UpdateQuestRequest> }
+    { partyId: number; questId: number; data: BodyType<UpdateQuestRequest> }
   > = (props) => {
-    const { questId, data } = props ?? {};
+    const { partyId, questId, data } = props ?? {};
 
-    return updateQuest(questId, data, requestOptions);
+    return updateQuest(partyId, questId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1988,14 +2173,14 @@ export const useUpdateQuest = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateQuest>>,
     TError,
-    { questId: number; data: BodyType<UpdateQuestRequest> },
+    { partyId: number; questId: number; data: BodyType<UpdateQuestRequest> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof updateQuest>>,
   TError,
-  { questId: number; data: BodyType<UpdateQuestRequest> },
+  { partyId: number; questId: number; data: BodyType<UpdateQuestRequest> },
   TContext
 > => {
   return useMutation(getUpdateQuestMutationOptions(options));
@@ -2004,15 +2189,16 @@ export const useUpdateQuest = <
 /**
  * @summary Delete a quest
  */
-export const getDeleteQuestUrl = (questId: number) => {
-  return `/api/quests/${questId}`;
+export const getDeleteQuestUrl = (partyId: number, questId: number) => {
+  return `/api/parties/${partyId}/quests/${questId}`;
 };
 
 export const deleteQuest = async (
+  partyId: number,
   questId: number,
   options?: RequestInit,
 ): Promise<void> => {
-  return customFetch<void>(getDeleteQuestUrl(questId), {
+  return customFetch<void>(getDeleteQuestUrl(partyId, questId), {
     ...options,
     method: "DELETE",
   });
@@ -2025,14 +2211,14 @@ export const getDeleteQuestMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteQuest>>,
     TError,
-    { questId: number },
+    { partyId: number; questId: number },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteQuest>>,
   TError,
-  { questId: number },
+  { partyId: number; questId: number },
   TContext
 > => {
   const mutationKey = ["deleteQuest"];
@@ -2046,11 +2232,11 @@ export const getDeleteQuestMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteQuest>>,
-    { questId: number }
+    { partyId: number; questId: number }
   > = (props) => {
-    const { questId } = props ?? {};
+    const { partyId, questId } = props ?? {};
 
-    return deleteQuest(questId, requestOptions);
+    return deleteQuest(partyId, questId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -2072,14 +2258,14 @@ export const useDeleteQuest = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteQuest>>,
     TError,
-    { questId: number },
+    { partyId: number; questId: number },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof deleteQuest>>,
   TError,
-  { questId: number },
+  { partyId: number; questId: number },
   TContext
 > => {
   return useMutation(getDeleteQuestMutationOptions(options));
