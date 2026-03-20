@@ -34,6 +34,8 @@ const formSchema = z.object({
   rarity: z.nativeEnum(CreateItemRequestRarity).optional().nullable(),
   maxCharges: z.coerce.number().min(0).optional().nullable(),
   rechargeOn: z.nativeEnum(CreateItemRequestRechargeOn).optional().nullable(),
+  quantity: z.coerce.number().int().min(1).default(1),
+  notes: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -62,6 +64,8 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
       rarity: null,
       maxCharges: null,
       rechargeOn: null,
+      quantity: 1,
+      notes: null,
     },
   });
 
@@ -77,6 +81,8 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
         rarity: (editingItem.rarity as CreateItemRequestRarity) || null,
         maxCharges: editingItem.maxCharges,
         rechargeOn: (editingItem.rechargeOn as CreateItemRequestRechargeOn) || null,
+        quantity: editingItem.quantity ?? 1,
+        notes: editingItem.notes ?? null,
       });
     } else if (open && !editingItem) {
       form.reset({
@@ -89,6 +95,8 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
         rarity: null,
         maxCharges: null,
         rechargeOn: null,
+        quantity: 1,
+        notes: null,
       });
     }
   }, [open, editingItem, form]);
@@ -126,6 +134,8 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
       maxCharges: data.maxCharges ?? null,
       rechargeOn: data.rechargeOn ?? null,
       currentCharges: data.maxCharges ?? null,
+      quantity: data.quantity,
+      notes: data.notes ?? null,
     };
 
     if (isEditing) {
@@ -198,6 +208,49 @@ export function AddItemDialog({ characterId, open, onOpenChange, editingItem }: 
               </FormItem>
             )}
           />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      {...field}
+                      value={field.value || 1}
+                      onChange={e => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
+                    />
+                  </FormControl>
+                  <FormDescription>How many of this item?</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Attuned, cursed..."
+                      {...field}
+                      value={field.value || ""}
+                      onChange={e => field.onChange(e.target.value || null)}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField

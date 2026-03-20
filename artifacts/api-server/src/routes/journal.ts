@@ -2,6 +2,10 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { journalEntriesTable } from "@workspace/db/schema";
 import { eq, and, desc } from "drizzle-orm";
+import {
+  CreateJournalEntryBody,
+  UpdateJournalEntryBody,
+} from "@workspace/api-zod";
 
 const router = Router({ mergeParams: true });
 
@@ -27,11 +31,14 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: "Invalid characterId" });
     return;
   }
-  const { title, body } = req.body;
-  if (!title || typeof title !== "string") {
-    res.status(400).json({ error: "title is required" });
+
+  const parsed = CreateJournalEntryBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request body", details: parsed.error.format() });
     return;
   }
+
+  const { title, body } = parsed.data;
   const [entry] = await db
     .insert(journalEntriesTable)
     .values({ characterId, title, body: body ?? "" })
@@ -66,11 +73,14 @@ router.put("/:entryId", async (req, res) => {
     res.status(400).json({ error: "Invalid ID" });
     return;
   }
-  const { title, body } = req.body;
-  if (!title || typeof title !== "string") {
-    res.status(400).json({ error: "title is required" });
+
+  const parsed = UpdateJournalEntryBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request body", details: parsed.error.format() });
     return;
   }
+
+  const { title, body } = parsed.data;
   const [entry] = await db
     .update(journalEntriesTable)
     .set({ title, body: body ?? "", updatedAt: new Date() })
