@@ -15,13 +15,16 @@ export interface ErrorResponse {
 
 export interface Character {
   id: number;
+  partyId?: number | null;
   name: string;
   playerName: string;
   characterClass: string;
   race: string;
   level: number;
+  summary?: string | null;
   avatarUrl?: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type InventoryItemCategory =
@@ -74,7 +77,9 @@ export interface InventoryItem {
   name: string;
   category: InventoryItemCategory;
   description: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity: number;
   location: InventoryItemLocation;
   isEquipped: boolean;
   maxCharges?: number | null;
@@ -85,26 +90,32 @@ export interface InventoryItem {
   isConsumed: boolean;
   isTrashed: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface CharacterWithItems {
   id: number;
+  partyId?: number | null;
   name: string;
   playerName: string;
   characterClass: string;
   race: string;
   level: number;
+  summary?: string | null;
   avatarUrl?: string | null;
   createdAt: string;
+  updatedAt: string;
   items: InventoryItem[];
 }
 
 export interface CreateCharacterRequest {
+  partyId?: number | null;
   name: string;
   playerName: string;
   characterClass: string;
   race: string;
   level: number;
+  summary?: string | null;
   avatarUrl?: string | null;
 }
 
@@ -156,7 +167,9 @@ export interface CreateItemRequest {
   name: string;
   category: CreateItemRequestCategory;
   description: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity?: number;
   location?: CreateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;
@@ -214,7 +227,9 @@ export interface UpdateItemRequest {
   name?: string;
   category?: UpdateItemRequestCategory;
   description?: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity?: number;
   location?: UpdateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;
@@ -249,8 +264,86 @@ export interface RestRequest {
   restType: RestRequestRestType;
 }
 
+export interface JournalEntry {
+  id: number;
+  characterId: number;
+  title: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateJournalEntryRequest {
+  title: string;
+  body: string;
+}
+
+export type QuestStatus = (typeof QuestStatus)[keyof typeof QuestStatus];
+
+export const QuestStatus = {
+  active: "active",
+  completed: "completed",
+  failed: "failed",
+} as const;
+
+export interface Quest {
+  id: number;
+  partyId?: number | null;
+  title: string;
+  description: string;
+  status: QuestStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateQuestRequestStatus =
+  (typeof CreateQuestRequestStatus)[keyof typeof CreateQuestRequestStatus];
+
+export const CreateQuestRequestStatus = {
+  active: "active",
+  completed: "completed",
+  failed: "failed",
+} as const;
+
+export interface CreateQuestRequest {
+  partyId?: number | null;
+  title: string;
+  description: string;
+  status?: CreateQuestRequestStatus;
+}
+
+export type UpdateQuestRequestStatus =
+  (typeof UpdateQuestRequestStatus)[keyof typeof UpdateQuestRequestStatus];
+
+export const UpdateQuestRequestStatus = {
+  active: "active",
+  completed: "completed",
+  failed: "failed",
+} as const;
+
+export interface UpdateQuestRequest {
+  title?: string;
+  description?: string;
+  status?: UpdateQuestRequestStatus;
+  partyId?: number | null;
+}
+
 export type ListItemsParams = {
   category?: string;
   search?: string;
   showConsumed?: boolean;
 };
+
+export type ListQuestsParams = {
+  partyId?: number;
+  status?: ListQuestsStatus;
+};
+
+export type ListQuestsStatus =
+  (typeof ListQuestsStatus)[keyof typeof ListQuestsStatus];
+
+export const ListQuestsStatus = {
+  active: "active",
+  completed: "completed",
+  failed: "failed",
+} as const;

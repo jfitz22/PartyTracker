@@ -14,7 +14,9 @@ export interface UpdateItemRequest {
   name?: string;
   category?: UpdateItemRequestCategory;
   description?: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity?: number;
   location?: UpdateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;

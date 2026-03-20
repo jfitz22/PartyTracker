@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/theme-context';
 import type { ParticleType } from '@/lib/themes';
@@ -209,7 +209,7 @@ export function AnimatedBackground() {
   const imgOpacity = THEME_BG_OPACITY[theme.id] ?? 0.2;
   const BASE_URL = import.meta.env.BASE_URL || '/';
 
-  const particles: Partial<Record<ParticleType, JSX.Element | null>> = {
+  const particles: Partial<Record<ParticleType, React.ReactElement | null>> = {
     embers: <EmberParticles />,
     runes: <RuneParticles color={theme.accentGlowColor} />,
     bubbles: <BubbleParticles />,

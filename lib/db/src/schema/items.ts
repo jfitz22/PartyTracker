@@ -21,7 +21,9 @@ export const itemsTable = pgTable("items", {
   name: text("name").notNull(),
   category: text("category").notNull().$type<ItemCategory>(),
   description: text("description").notNull().default(""),
+  notes: text("notes"),
   imageUrl: text("image_url"),
+  quantity: integer("quantity").notNull().default(1),
   location: text("location").notNull().default("carried").$type<ItemLocation>(),
   isEquipped: boolean("is_equipped").notNull().default(false),
   maxCharges: integer("max_charges"),
@@ -32,8 +34,9 @@ export const itemsTable = pgTable("items", {
   isConsumed: boolean("is_consumed").notNull().default(false),
   isTrashed: boolean("is_trashed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const insertItemSchema = createInsertSchema(itemsTable).omit({ id: true, createdAt: true });
+export const insertItemSchema = createInsertSchema(itemsTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertItem = z.infer<typeof insertItemSchema>;
 export type Item = typeof itemsTable.$inferSelect;

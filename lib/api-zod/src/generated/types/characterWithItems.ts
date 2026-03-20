@@ -9,12 +9,15 @@ import type { InventoryItem } from "./inventoryItem";
 
 export interface CharacterWithItems {
   id: number;
+  partyId?: number | null;
   name: string;
   playerName: string;
   characterClass: string;
   race: string;
   level: number;
+  summary?: string | null;
   avatarUrl?: string | null;
   createdAt: Date;
+  updatedAt: Date;
   items: InventoryItem[];
 }

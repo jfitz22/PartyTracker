@@ -21,13 +21,19 @@ import type {
   CharacterWithItems,
   CreateCharacterRequest,
   CreateItemRequest,
+  CreateJournalEntryRequest,
+  CreateQuestRequest,
   ErrorResponse,
   HealthStatus,
   InventoryItem,
+  JournalEntry,
   ListItemsParams,
+  ListQuestsParams,
   MoveItemRequest,
+  Quest,
   RestRequest,
   UpdateItemRequest,
+  UpdateQuestRequest,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1160,6 +1166,923 @@ export const useMoveItem = <
   TContext
 > => {
   return useMutation(getMoveItemMutationOptions(options));
+};
+
+/**
+ * @summary List all journal entries for a character
+ */
+export const getListJournalEntriesUrl = (characterId: number) => {
+  return `/api/characters/${characterId}/journal`;
+};
+
+export const listJournalEntries = async (
+  characterId: number,
+  options?: RequestInit,
+): Promise<JournalEntry[]> => {
+  return customFetch<JournalEntry[]>(getListJournalEntriesUrl(characterId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListJournalEntriesQueryKey = (characterId: number) => {
+  return [`/api/characters/${characterId}/journal`] as const;
+};
+
+export const getListJournalEntriesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listJournalEntries>>,
+  TError = ErrorType<unknown>,
+>(
+  characterId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listJournalEntries>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListJournalEntriesQueryKey(characterId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listJournalEntries>>
+  > = ({ signal }) =>
+    listJournalEntries(characterId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!characterId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listJournalEntries>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListJournalEntriesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listJournalEntries>>
+>;
+export type ListJournalEntriesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all journal entries for a character
+ */
+
+export function useListJournalEntries<
+  TData = Awaited<ReturnType<typeof listJournalEntries>>,
+  TError = ErrorType<unknown>,
+>(
+  characterId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listJournalEntries>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListJournalEntriesQueryOptions(characterId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new journal entry
+ */
+export const getCreateJournalEntryUrl = (characterId: number) => {
+  return `/api/characters/${characterId}/journal`;
+};
+
+export const createJournalEntry = async (
+  characterId: number,
+  createJournalEntryRequest: CreateJournalEntryRequest,
+  options?: RequestInit,
+): Promise<JournalEntry> => {
+  return customFetch<JournalEntry>(getCreateJournalEntryUrl(characterId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createJournalEntryRequest),
+  });
+};
+
+export const getCreateJournalEntryMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJournalEntry>>,
+    TError,
+    { characterId: number; data: BodyType<CreateJournalEntryRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createJournalEntry>>,
+  TError,
+  { characterId: number; data: BodyType<CreateJournalEntryRequest> },
+  TContext
+> => {
+  const mutationKey = ["createJournalEntry"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createJournalEntry>>,
+    { characterId: number; data: BodyType<CreateJournalEntryRequest> }
+  > = (props) => {
+    const { characterId, data } = props ?? {};
+
+    return createJournalEntry(characterId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateJournalEntryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createJournalEntry>>
+>;
+export type CreateJournalEntryMutationBody =
+  BodyType<CreateJournalEntryRequest>;
+export type CreateJournalEntryMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new journal entry
+ */
+export const useCreateJournalEntry = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJournalEntry>>,
+    TError,
+    { characterId: number; data: BodyType<CreateJournalEntryRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createJournalEntry>>,
+  TError,
+  { characterId: number; data: BodyType<CreateJournalEntryRequest> },
+  TContext
+> => {
+  return useMutation(getCreateJournalEntryMutationOptions(options));
+};
+
+/**
+ * @summary Get a specific journal entry
+ */
+export const getGetJournalEntryUrl = (characterId: number, entryId: number) => {
+  return `/api/characters/${characterId}/journal/${entryId}`;
+};
+
+export const getJournalEntry = async (
+  characterId: number,
+  entryId: number,
+  options?: RequestInit,
+): Promise<JournalEntry> => {
+  return customFetch<JournalEntry>(
+    getGetJournalEntryUrl(characterId, entryId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetJournalEntryQueryKey = (
+  characterId: number,
+  entryId: number,
+) => {
+  return [`/api/characters/${characterId}/journal/${entryId}`] as const;
+};
+
+export const getGetJournalEntryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getJournalEntry>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  characterId: number,
+  entryId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getJournalEntry>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetJournalEntryQueryKey(characterId, entryId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getJournalEntry>>> = ({
+    signal,
+  }) => getJournalEntry(characterId, entryId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(characterId && entryId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getJournalEntry>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetJournalEntryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getJournalEntry>>
+>;
+export type GetJournalEntryQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a specific journal entry
+ */
+
+export function useGetJournalEntry<
+  TData = Awaited<ReturnType<typeof getJournalEntry>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  characterId: number,
+  entryId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getJournalEntry>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetJournalEntryQueryOptions(
+    characterId,
+    entryId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a journal entry
+ */
+export const getUpdateJournalEntryUrl = (
+  characterId: number,
+  entryId: number,
+) => {
+  return `/api/characters/${characterId}/journal/${entryId}`;
+};
+
+export const updateJournalEntry = async (
+  characterId: number,
+  entryId: number,
+  createJournalEntryRequest: CreateJournalEntryRequest,
+  options?: RequestInit,
+): Promise<JournalEntry> => {
+  return customFetch<JournalEntry>(
+    getUpdateJournalEntryUrl(characterId, entryId),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createJournalEntryRequest),
+    },
+  );
+};
+
+export const getUpdateJournalEntryMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJournalEntry>>,
+    TError,
+    {
+      characterId: number;
+      entryId: number;
+      data: BodyType<CreateJournalEntryRequest>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateJournalEntry>>,
+  TError,
+  {
+    characterId: number;
+    entryId: number;
+    data: BodyType<CreateJournalEntryRequest>;
+  },
+  TContext
+> => {
+  const mutationKey = ["updateJournalEntry"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateJournalEntry>>,
+    {
+      characterId: number;
+      entryId: number;
+      data: BodyType<CreateJournalEntryRequest>;
+    }
+  > = (props) => {
+    const { characterId, entryId, data } = props ?? {};
+
+    return updateJournalEntry(characterId, entryId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateJournalEntryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateJournalEntry>>
+>;
+export type UpdateJournalEntryMutationBody =
+  BodyType<CreateJournalEntryRequest>;
+export type UpdateJournalEntryMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a journal entry
+ */
+export const useUpdateJournalEntry = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJournalEntry>>,
+    TError,
+    {
+      characterId: number;
+      entryId: number;
+      data: BodyType<CreateJournalEntryRequest>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateJournalEntry>>,
+  TError,
+  {
+    characterId: number;
+    entryId: number;
+    data: BodyType<CreateJournalEntryRequest>;
+  },
+  TContext
+> => {
+  return useMutation(getUpdateJournalEntryMutationOptions(options));
+};
+
+/**
+ * @summary Delete a journal entry
+ */
+export const getDeleteJournalEntryUrl = (
+  characterId: number,
+  entryId: number,
+) => {
+  return `/api/characters/${characterId}/journal/${entryId}`;
+};
+
+export const deleteJournalEntry = async (
+  characterId: number,
+  entryId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteJournalEntryUrl(characterId, entryId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteJournalEntryMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJournalEntry>>,
+    TError,
+    { characterId: number; entryId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteJournalEntry>>,
+  TError,
+  { characterId: number; entryId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteJournalEntry"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteJournalEntry>>,
+    { characterId: number; entryId: number }
+  > = (props) => {
+    const { characterId, entryId } = props ?? {};
+
+    return deleteJournalEntry(characterId, entryId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteJournalEntryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteJournalEntry>>
+>;
+
+export type DeleteJournalEntryMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a journal entry
+ */
+export const useDeleteJournalEntry = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJournalEntry>>,
+    TError,
+    { characterId: number; entryId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteJournalEntry>>,
+  TError,
+  { characterId: number; entryId: number },
+  TContext
+> => {
+  return useMutation(getDeleteJournalEntryMutationOptions(options));
+};
+
+/**
+ * @summary List all quests
+ */
+export const getListQuestsUrl = (params?: ListQuestsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/quests?${stringifiedParams}`
+    : `/api/quests`;
+};
+
+export const listQuests = async (
+  params?: ListQuestsParams,
+  options?: RequestInit,
+): Promise<Quest[]> => {
+  return customFetch<Quest[]>(getListQuestsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListQuestsQueryKey = (params?: ListQuestsParams) => {
+  return [`/api/quests`, ...(params ? [params] : [])] as const;
+};
+
+export const getListQuestsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listQuests>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListQuestsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listQuests>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListQuestsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listQuests>>> = ({
+    signal,
+  }) => listQuests(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listQuests>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListQuestsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listQuests>>
+>;
+export type ListQuestsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all quests
+ */
+
+export function useListQuests<
+  TData = Awaited<ReturnType<typeof listQuests>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListQuestsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listQuests>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListQuestsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new quest
+ */
+export const getCreateQuestUrl = () => {
+  return `/api/quests`;
+};
+
+export const createQuest = async (
+  createQuestRequest: CreateQuestRequest,
+  options?: RequestInit,
+): Promise<Quest> => {
+  return customFetch<Quest>(getCreateQuestUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createQuestRequest),
+  });
+};
+
+export const getCreateQuestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createQuest>>,
+    TError,
+    { data: BodyType<CreateQuestRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createQuest>>,
+  TError,
+  { data: BodyType<CreateQuestRequest> },
+  TContext
+> => {
+  const mutationKey = ["createQuest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createQuest>>,
+    { data: BodyType<CreateQuestRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createQuest(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateQuestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createQuest>>
+>;
+export type CreateQuestMutationBody = BodyType<CreateQuestRequest>;
+export type CreateQuestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new quest
+ */
+export const useCreateQuest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createQuest>>,
+    TError,
+    { data: BodyType<CreateQuestRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createQuest>>,
+  TError,
+  { data: BodyType<CreateQuestRequest> },
+  TContext
+> => {
+  return useMutation(getCreateQuestMutationOptions(options));
+};
+
+/**
+ * @summary Get a specific quest
+ */
+export const getGetQuestUrl = (questId: number) => {
+  return `/api/quests/${questId}`;
+};
+
+export const getQuest = async (
+  questId: number,
+  options?: RequestInit,
+): Promise<Quest> => {
+  return customFetch<Quest>(getGetQuestUrl(questId), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetQuestQueryKey = (questId: number) => {
+  return [`/api/quests/${questId}`] as const;
+};
+
+export const getGetQuestQueryOptions = <
+  TData = Awaited<ReturnType<typeof getQuest>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  questId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getQuest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetQuestQueryKey(questId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getQuest>>> = ({
+    signal,
+  }) => getQuest(questId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!questId,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getQuest>>, TError, TData> & {
+    queryKey: QueryKey;
+  };
+};
+
+export type GetQuestQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getQuest>>
+>;
+export type GetQuestQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a specific quest
+ */
+
+export function useGetQuest<
+  TData = Awaited<ReturnType<typeof getQuest>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  questId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getQuest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetQuestQueryOptions(questId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a quest
+ */
+export const getUpdateQuestUrl = (questId: number) => {
+  return `/api/quests/${questId}`;
+};
+
+export const updateQuest = async (
+  questId: number,
+  updateQuestRequest: UpdateQuestRequest,
+  options?: RequestInit,
+): Promise<Quest> => {
+  return customFetch<Quest>(getUpdateQuestUrl(questId), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateQuestRequest),
+  });
+};
+
+export const getUpdateQuestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateQuest>>,
+    TError,
+    { questId: number; data: BodyType<UpdateQuestRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateQuest>>,
+  TError,
+  { questId: number; data: BodyType<UpdateQuestRequest> },
+  TContext
+> => {
+  const mutationKey = ["updateQuest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateQuest>>,
+    { questId: number; data: BodyType<UpdateQuestRequest> }
+  > = (props) => {
+    const { questId, data } = props ?? {};
+
+    return updateQuest(questId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateQuestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateQuest>>
+>;
+export type UpdateQuestMutationBody = BodyType<UpdateQuestRequest>;
+export type UpdateQuestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a quest
+ */
+export const useUpdateQuest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateQuest>>,
+    TError,
+    { questId: number; data: BodyType<UpdateQuestRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateQuest>>,
+  TError,
+  { questId: number; data: BodyType<UpdateQuestRequest> },
+  TContext
+> => {
+  return useMutation(getUpdateQuestMutationOptions(options));
+};
+
+/**
+ * @summary Delete a quest
+ */
+export const getDeleteQuestUrl = (questId: number) => {
+  return `/api/quests/${questId}`;
+};
+
+export const deleteQuest = async (
+  questId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteQuestUrl(questId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteQuestMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteQuest>>,
+    TError,
+    { questId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteQuest>>,
+  TError,
+  { questId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteQuest"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteQuest>>,
+    { questId: number }
+  > = (props) => {
+    const { questId } = props ?? {};
+
+    return deleteQuest(questId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteQuestMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteQuest>>
+>;
+
+export type DeleteQuestMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a quest
+ */
+export const useDeleteQuest = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteQuest>>,
+    TError,
+    { questId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteQuest>>,
+  TError,
+  { questId: number },
+  TContext
+> => {
+  return useMutation(getDeleteQuestMutationOptions(options));
 };
 
 /**

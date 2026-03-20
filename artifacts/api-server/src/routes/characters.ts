@@ -32,7 +32,9 @@ router.post("/", async (req, res) => {
       characterClass: parsed.data.characterClass,
       race: parsed.data.race,
       level: parsed.data.level,
+      summary: parsed.data.summary ?? null,
       avatarUrl: parsed.data.avatarUrl ?? null,
+      partyId: parsed.data.partyId ?? null,
     })
     .returning();
   res.status(201).json(character);
@@ -72,7 +74,10 @@ router.put("/:characterId", async (req, res) => {
       characterClass: data.characterClass,
       race: data.race,
       level: data.level,
+      summary: data.summary ?? null,
       avatarUrl: data.avatarUrl ?? null,
+      partyId: data.partyId ?? null,
+      updatedAt: new Date(),
     })
     .where(eq(charactersTable.id, characterId))
     .returning();
@@ -111,7 +116,7 @@ router.post("/:characterId/rest", async (req, res) => {
     if (shouldRecharge && item.currentCharges < item.maxCharges) {
       const [updated] = await db
         .update(itemsTable)
-        .set({ currentCharges: item.maxCharges })
+        .set({ currentCharges: item.maxCharges, updatedAt: new Date() })
         .where(eq(itemsTable.id, item.id))
         .returning();
       updatedItems.push(updated);

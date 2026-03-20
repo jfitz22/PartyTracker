@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AddItemDialog } from '@/components/add-item-dialog';
 import { EditCharacterDialog } from '@/components/edit-character-dialog';
+import { QuestLogSection } from '@/components/quest-log-section';
 import { CATEGORY_MAP, RARITY_MAP, RECHARGE_MAP } from '@/lib/constants';
-import { ArrowLeft, Crown, Settings, Edit, Backpack, Shield, Box, Sparkles, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import { ArrowLeft, Crown, Settings, Edit, Backpack, Shield, Box, ChevronDown, ChevronUp, Package } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme-selector';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -57,6 +58,12 @@ export default function DmDashboard() {
           <ThemeSelector />
         </div>
 
+        {/* Quest Log - DM can manage */}
+        <div className="mb-12">
+          <QuestLogSection isDm={true} />
+        </div>
+
+        {/* Characters */}
         <div className="space-y-8">
           {characters.length === 0 ? (
             <div className="text-center py-24 bg-card/50 rounded-2xl border border-border">
@@ -101,6 +108,9 @@ export default function DmDashboard() {
                         <p className="text-sm text-muted-foreground">
                           Lvl {char.level} {char.race} {char.characterClass} <span className="text-primary/70 ml-2 italic">Player: {char.playerName}</span>
                         </p>
+                        {char.summary && (
+                          <p className="text-xs text-muted-foreground/60 italic mt-0.5">{char.summary}</p>
+                        )}
                       </div>
                     </div>
                     <CollapsibleTrigger asChild>
@@ -196,8 +206,8 @@ export default function DmDashboard() {
                         {CATEGORY_MAP[viewingItem.category]?.label}
                       </Badge>
                       {viewingItem.rarity && (
-                        <span className={cn("font-bold uppercase tracking-wider", RARITY_MAP[viewingItem.rarity as InventoryItemRarity]?.colorClass)}>
-                          {RARITY_MAP[viewingItem.rarity as InventoryItemRarity]?.label}
+                        <span className={cn("font-bold uppercase tracking-wider", RARITY_MAP[viewingItem.rarity as NonNullable<InventoryItemRarity>]?.colorClass)}>
+                          {RARITY_MAP[viewingItem.rarity as NonNullable<InventoryItemRarity>]?.label}
                         </span>
                       )}
                     </div>
@@ -244,7 +254,16 @@ export default function DmDashboard() {
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-4 border-t border-border/50">
                     <div>Location: <strong className="text-foreground capitalize">{viewingItem.location}</strong></div>
                     <div>Consumable: <strong className="text-foreground">{viewingItem.isConsumable ? 'Yes' : 'No'}</strong></div>
+                    {viewingItem.quantity !== undefined && viewingItem.quantity > 1 && (
+                      <div>Quantity: <strong className="text-foreground">{viewingItem.quantity}</strong></div>
+                    )}
                   </div>
+
+                  {viewingItem.notes && (
+                    <div className="text-xs text-muted-foreground/70 italic border-t border-border/50 pt-3 whitespace-pre-wrap">
+                      {viewingItem.notes}
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </>
@@ -272,7 +291,7 @@ function ItemList({
   return (
     <ul className="space-y-2">
       {items.map(item => {
-        const rarityInfo = item.rarity ? RARITY_MAP[item.rarity as InventoryItemRarity] : null;
+        const rarityInfo = item.rarity ? RARITY_MAP[item.rarity as NonNullable<InventoryItemRarity>] : null;
         const hasCharges = item.maxCharges !== null && item.maxCharges !== undefined && item.maxCharges > 0;
         
         return (

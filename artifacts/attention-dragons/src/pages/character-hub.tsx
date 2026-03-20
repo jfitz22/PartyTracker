@@ -8,6 +8,8 @@ import { ItemCard } from '@/components/item-card';
 import { AddItemDialog } from '@/components/add-item-dialog';
 import { EditCharacterDialog } from '@/components/edit-character-dialog';
 import { ThemeSelector } from '@/components/theme-selector';
+import { JournalSection } from '@/components/journal-section';
+import { QuestLogSection } from '@/components/quest-log-section';
 import { CATEGORY_MAP } from '@/lib/constants';
 import { ArrowLeft, Moon, Search, Sun, Plus, PackageOpen, Settings, Backpack, Shield, Box, ChevronDown, ChevronUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -115,6 +117,9 @@ export default function CharacterHub() {
                   </Button>
                 </div>
                 <p className="text-muted-foreground font-sans mt-1">Level {character.level} {character.race} {character.characterClass}</p>
+                {character.summary && (
+                  <p className="text-muted-foreground/70 font-sans text-sm mt-0.5 italic">{character.summary}</p>
+                )}
               </div>
             </div>
           </div>
@@ -270,6 +275,17 @@ export default function CharacterHub() {
             )}
           </div>
         )}
+
+        {/* SECTION C: CHRONICLE (Journal) */}
+        <div className="mt-16">
+          <JournalSection characterId={id} />
+        </div>
+
+        {/* SECTION D: QUEST LOG (read-only for players) */}
+        <div className="mt-12">
+          <QuestLogSection isDm={false} />
+        </div>
+
       </div>
 
       <AddItemDialog

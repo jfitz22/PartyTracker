@@ -14,6 +14,10 @@ tags:
     description: Character operations
   - name: items
     description: Inventory item operations
+  - name: journal
+    description: Journal entry operations
+  - name: quests
+    description: Quest log operations
   - name: dm
     description: Dungeon Master operations
 paths:
@@ -327,6 +331,231 @@ paths:
               schema:
                 $ref: "#/components/schemas/InventoryItem"
 
+  /characters/{characterId}/journal:
+    get:
+      operationId: listJournalEntries
+      tags: [journal]
+      summary: List all journal entries for a character
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of journal entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JournalEntry"
+    post:
+      operationId: createJournalEntry
+      tags: [journal]
+      summary: Create a new journal entry
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJournalEntryRequest"
+      responses:
+        "201":
+          description: Journal entry created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntry"
+
+  /characters/{characterId}/journal/{entryId}:
+    get:
+      operationId: getJournalEntry
+      tags: [journal]
+      summary: Get a specific journal entry
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Journal entry found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateJournalEntry
+      tags: [journal]
+      summary: Update a journal entry
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJournalEntryRequest"
+      responses:
+        "200":
+          description: Journal entry updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JournalEntry"
+    delete:
+      operationId: deleteJournalEntry
+      tags: [journal]
+      summary: Delete a journal entry
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Journal entry deleted
+
+  /quests:
+    get:
+      operationId: listQuests
+      tags: [quests]
+      summary: List all quests
+      parameters:
+        - name: partyId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, completed, failed]
+      responses:
+        "200":
+          description: List of quests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Quest"
+    post:
+      operationId: createQuest
+      tags: [quests]
+      summary: Create a new quest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuestRequest"
+      responses:
+        "201":
+          description: Quest created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quest"
+
+  /quests/{questId}:
+    get:
+      operationId: getQuest
+      tags: [quests]
+      summary: Get a specific quest
+      parameters:
+        - name: questId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quest found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quest"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateQuest
+      tags: [quests]
+      summary: Update a quest
+      parameters:
+        - name: questId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateQuestRequest"
+      responses:
+        "200":
+          description: Quest updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quest"
+    delete:
+      operationId: deleteQuest
+      tags: [quests]
+      summary: Delete a quest
+      parameters:
+        - name: questId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Quest deleted
+
   /dm/overview:
     get:
       operationId: getDmOverview
@@ -365,6 +594,9 @@ components:
       properties:
         id:
           type: integer
+        partyId:
+          type: integer
+          nullable: true
         name:
           type: string
         playerName:
@@ -375,10 +607,16 @@ components:
           type: string
         level:
           type: integer
+        summary:
+          type: string
+          nullable: true
         avatarUrl:
           type: string
           nullable: true
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
       required:
@@ -389,12 +627,16 @@ components:
         - race
         - level
         - createdAt
+        - updatedAt
 
     CharacterWithItems:
       type: object
       properties:
         id:
           type: integer
+        partyId:
+          type: integer
+          nullable: true
         name:
           type: string
         playerName:
@@ -405,10 +647,16 @@ components:
           type: string
         level:
           type: integer
+        summary:
+          type: string
+          nullable: true
         avatarUrl:
           type: string
           nullable: true
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
         items:
@@ -423,11 +671,15 @@ components:
         - race
         - level
         - createdAt
+        - updatedAt
         - items
 
     CreateCharacterRequest:
       type: object
       properties:
+        partyId:
+          type: integer
+          nullable: true
         name:
           type: string
         playerName:
@@ -438,6 +690,9 @@ components:
           type: string
         level:
           type: integer
+        summary:
+          type: string
+          nullable: true
         avatarUrl:
           type: string
           nullable: true
@@ -468,9 +723,14 @@ components:
             - misc
         description:
           type: string
+        notes:
+          type: string
+          nullable: true
         imageUrl:
           type: string
           nullable: true
+        quantity:
+          type: integer
         location:
           type: string
           enum: [equipped, carried, stored]
@@ -499,18 +759,23 @@ components:
         createdAt:
           type: string
           format: date-time
+        updatedAt:
+          type: string
+          format: date-time
       required:
         - id
         - characterId
         - name
         - category
         - description
+        - quantity
         - location
         - isEquipped
         - isConsumable
         - isConsumed
         - isTrashed
         - createdAt
+        - updatedAt
 
     CreateItemRequest:
       type: object
@@ -528,9 +793,14 @@ components:
             - misc
         description:
           type: string
+        notes:
+          type: string
+          nullable: true
         imageUrl:
           type: string
           nullable: true
+        quantity:
+          type: integer
         location:
           type: string
           enum: [equipped, carried, stored]
@@ -574,9 +844,14 @@ components:
             - misc
         description:
           type: string
+        notes:
+          type: string
+          nullable: true
         imageUrl:
           type: string
           nullable: true
+        quantity:
+          type: integer
         location:
           type: string
           enum: [equipped, carried, stored]
@@ -616,3 +891,99 @@ components:
           enum: [short_rest, long_rest]
       required:
         - restType
+
+    JournalEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        characterId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - characterId
+        - title
+        - body
+        - createdAt
+        - updatedAt
+
+    CreateJournalEntryRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+      required:
+        - title
+        - body
+
+    Quest:
+      type: object
+      properties:
+        id:
+          type: integer
+        partyId:
+          type: integer
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, failed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateQuestRequest:
+      type: object
+      properties:
+        partyId:
+          type: integer
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, failed]
+      required:
+        - title
+        - description
+
+    UpdateQuestRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, failed]
+        partyId:
+          type: integer
+          nullable: true

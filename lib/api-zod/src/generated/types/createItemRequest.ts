@@ -14,7 +14,9 @@ export interface CreateItemRequest {
   name: string;
   category: CreateItemRequestCategory;
   description: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity?: number;
   location?: CreateItemRequestLocation;
   isEquipped?: boolean;
   maxCharges?: number | null;

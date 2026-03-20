@@ -10,7 +10,7 @@ export const CATEGORY_MAP: Record<InventoryItemCategory, { label: string, icon: 
   [InventoryItemCategory.misc]: { label: 'Mundane Goods', icon: Package },
 };
 
-export const RARITY_MAP: Record<InventoryItemRarity, { label: string, colorClass: string }> = {
+export const RARITY_MAP: Record<NonNullable<InventoryItemRarity>, { label: string, colorClass: string }> = {
   [InventoryItemRarity.common]: { label: 'Common', colorClass: 'border-rarity-common text-rarity-common' },
   [InventoryItemRarity.uncommon]: { label: 'Uncommon', colorClass: 'border-rarity-uncommon text-rarity-uncommon' },
   [InventoryItemRarity.rare]: { label: 'Rare', colorClass: 'border-rarity-rare text-rarity-rare' },
@@ -18,7 +18,7 @@ export const RARITY_MAP: Record<InventoryItemRarity, { label: string, colorClass
   [InventoryItemRarity.legendary]: { label: 'Legendary', colorClass: 'border-rarity-legendary text-rarity-legendary' },
 };
 
-export const RECHARGE_MAP: Record<InventoryItemRechargeOn, string> = {
+export const RECHARGE_MAP: Record<NonNullable<InventoryItemRechargeOn>, string> = {
   [InventoryItemRechargeOn.short_rest]: 'Short Rest',
   [InventoryItemRechargeOn.long_rest]: 'Long Rest',
   [InventoryItemRechargeOn.dawn]: 'Dawn',

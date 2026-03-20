@@ -16,7 +16,9 @@ export interface InventoryItem {
   name: string;
   category: InventoryItemCategory;
   description: string;
+  notes?: string | null;
   imageUrl?: string | null;
+  quantity: number;
   location: InventoryItemLocation;
   isEquipped: boolean;
   maxCharges?: number | null;
@@ -27,4 +29,5 @@ export interface InventoryItem {
   isConsumed: boolean;
   isTrashed: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }

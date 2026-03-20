@@ -19,7 +19,8 @@ import {
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
-  const paramsParsed = ListItemsParams.safeParse({ characterId: Number(req.params.characterId) });
+  const p = req.params as Record<string, string>;
+  const paramsParsed = ListItemsParams.safeParse({ characterId: Number(p.characterId) });
   const queryParsed = ListItemsQueryParams.safeParse(req.query);
   if (!paramsParsed.success) {
     res.status(400).json({ error: "Invalid characterId" });
@@ -53,7 +54,8 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const paramsParsed = CreateItemParams.safeParse({ characterId: Number(req.params.characterId) });
+  const p = req.params as Record<string, string>;
+  const paramsParsed = CreateItemParams.safeParse({ characterId: Number(p.characterId) });
   const bodyParsed = CreateItemBody.safeParse(req.body);
   if (!paramsParsed.success || !bodyParsed.success) {
     res.status(400).json({ error: "Invalid request" });
@@ -71,7 +73,9 @@ router.post("/", async (req, res) => {
       name: data.name,
       category: data.category as any,
       description: data.description,
+      notes: (data as any).notes ?? null,
       imageUrl: data.imageUrl ?? null,
+      quantity: (data as any).quantity ?? 1,
       location: location as any,
       isEquipped: location === "equipped",
       maxCharges: data.maxCharges ?? null,
@@ -87,9 +91,10 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:itemId", async (req, res) => {
+  const p = req.params as Record<string, string>;
   const parsed = GetItemParams.safeParse({
-    characterId: Number(req.params.characterId),
-    itemId: Number(req.params.itemId),
+    characterId: Number(p.characterId),
+    itemId: Number(p.itemId),
   });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid params" });
@@ -107,9 +112,10 @@ router.get("/:itemId", async (req, res) => {
 });
 
 router.put("/:itemId", async (req, res) => {
+  const p = req.params as Record<string, string>;
   const paramsParsed = UpdateItemParams.safeParse({
-    characterId: Number(req.params.characterId),
-    itemId: Number(req.params.itemId),
+    characterId: Number(p.characterId),
+    itemId: Number(p.itemId),
   });
   const bodyParsed = UpdateItemBody.safeParse(req.body);
   if (!paramsParsed.success) {
@@ -119,10 +125,12 @@ router.put("/:itemId", async (req, res) => {
   const { itemId, characterId } = paramsParsed.data;
   const data = bodyParsed.success ? bodyParsed.data : {};
 
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, any> = { updatedAt: new Date() };
   if (data.name !== undefined) updateData.name = data.name;
   if (data.category !== undefined) updateData.category = data.category;
   if (data.description !== undefined) updateData.description = data.description;
+  if ((data as any).notes !== undefined) updateData.notes = (data as any).notes;
+  if ((data as any).quantity !== undefined) updateData.quantity = (data as any).quantity;
   if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
   if (data.location !== undefined) {
     updateData.location = data.location;
@@ -150,9 +158,10 @@ router.put("/:itemId", async (req, res) => {
 });
 
 router.delete("/:itemId", async (req, res) => {
+  const p = req.params as Record<string, string>;
   const parsed = DeleteItemParams.safeParse({
-    characterId: Number(req.params.characterId),
-    itemId: Number(req.params.itemId),
+    characterId: Number(p.characterId),
+    itemId: Number(p.itemId),
   });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid params" });
@@ -160,15 +169,16 @@ router.delete("/:itemId", async (req, res) => {
   }
   await db
     .update(itemsTable)
-    .set({ isTrashed: true })
+    .set({ isTrashed: true, updatedAt: new Date() })
     .where(and(eq(itemsTable.id, parsed.data.itemId), eq(itemsTable.characterId, parsed.data.characterId)));
   res.status(204).send();
 });
 
 router.post("/:itemId/use", async (req, res) => {
+  const p = req.params as Record<string, string>;
   const parsed = UseItemParams.safeParse({
-    characterId: Number(req.params.characterId),
-    itemId: Number(req.params.itemId),
+    characterId: Number(p.characterId),
+    itemId: Number(p.itemId),
   });
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid params" });
@@ -184,7 +194,7 @@ router.post("/:itemId/use", async (req, res) => {
     return;
   }
 
-  let updateData: Record<string, any> = {};
+  const updateData: Record<string, any> = { updatedAt: new Date() };
 
   if (existing.isConsumable) {
     updateData.isConsumed = true;
@@ -208,9 +218,10 @@ router.post("/:itemId/use", async (req, res) => {
 });
 
 router.post("/:itemId/location", async (req, res) => {
+  const p = req.params as Record<string, string>;
   const paramsParsed = MoveItemParams.safeParse({
-    characterId: Number(req.params.characterId),
-    itemId: Number(req.params.itemId),
+    characterId: Number(p.characterId),
+    itemId: Number(p.itemId),
   });
   const bodyParsed = MoveItemBody.safeParse(req.body);
   if (!paramsParsed.success || !bodyParsed.success) {
@@ -225,6 +236,7 @@ router.post("/:itemId/location", async (req, res) => {
     .set({
       location: location as any,
       isEquipped: location === "equipped",
+      updatedAt: new Date(),
     })
     .where(and(eq(itemsTable.id, itemId), eq(itemsTable.characterId, characterId)))
     .returning();

@@ -20,13 +20,16 @@ export const HealthCheckResponse = zod.object({
  */
 export const ListCharactersResponseItem = zod.object({
   id: zod.number(),
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 export const ListCharactersResponse = zod.array(ListCharactersResponseItem);
 
@@ -34,11 +37,13 @@ export const ListCharactersResponse = zod.array(ListCharactersResponseItem);
  * @summary Create a new character
  */
 export const CreateCharacterBody = zod.object({
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
 });
 
@@ -51,13 +56,16 @@ export const GetCharacterParams = zod.object({
 
 export const GetCharacterResponse = zod.object({
   id: zod.number(),
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**
@@ -68,23 +76,28 @@ export const UpdateCharacterParams = zod.object({
 });
 
 export const UpdateCharacterBody = zod.object({
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
 });
 
 export const UpdateCharacterResponse = zod.object({
   id: zod.number(),
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**
@@ -111,7 +124,9 @@ export const TriggerRestResponseItem = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -124,6 +139,7 @@ export const TriggerRestResponseItem = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 export const TriggerRestResponse = zod.array(TriggerRestResponseItem);
 
@@ -153,7 +169,9 @@ export const ListItemsResponseItem = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -166,6 +184,7 @@ export const ListItemsResponseItem = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 export const ListItemsResponse = zod.array(ListItemsResponseItem);
 
@@ -187,7 +206,9 @@ export const CreateItemBody = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number().optional(),
   location: zod.enum(["equipped", "carried", "stored"]).optional(),
   isEquipped: zod.boolean().optional(),
   maxCharges: zod.number().nullish(),
@@ -220,7 +241,9 @@ export const GetItemResponse = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -233,6 +256,7 @@ export const GetItemResponse = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**
@@ -249,7 +273,9 @@ export const UpdateItemBody = zod.object({
     .enum(["weapons", "armor", "magic_items", "scrolls", "potions", "misc"])
     .optional(),
   description: zod.string().optional(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number().optional(),
   location: zod.enum(["equipped", "carried", "stored"]).optional(),
   isEquipped: zod.boolean().optional(),
   maxCharges: zod.number().nullish(),
@@ -274,7 +300,9 @@ export const UpdateItemResponse = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -287,6 +315,7 @@ export const UpdateItemResponse = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**
@@ -318,7 +347,9 @@ export const UseItemResponse = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -331,6 +362,7 @@ export const UseItemResponse = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**
@@ -358,7 +390,9 @@ export const MoveItemResponse = zod.object({
     "misc",
   ]),
   description: zod.string(),
+  notes: zod.string().nullish(),
   imageUrl: zod.string().nullish(),
+  quantity: zod.number(),
   location: zod.enum(["equipped", "carried", "stored"]),
   isEquipped: zod.boolean(),
   maxCharges: zod.number().nullish(),
@@ -371,6 +405,162 @@ export const MoveItemResponse = zod.object({
   isConsumed: zod.boolean(),
   isTrashed: zod.boolean(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary List all journal entries for a character
+ */
+export const ListJournalEntriesParams = zod.object({
+  characterId: zod.coerce.number(),
+});
+
+export const ListJournalEntriesResponseItem = zod.object({
+  id: zod.number(),
+  characterId: zod.number(),
+  title: zod.string(),
+  body: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListJournalEntriesResponse = zod.array(
+  ListJournalEntriesResponseItem,
+);
+
+/**
+ * @summary Create a new journal entry
+ */
+export const CreateJournalEntryParams = zod.object({
+  characterId: zod.coerce.number(),
+});
+
+export const CreateJournalEntryBody = zod.object({
+  title: zod.string(),
+  body: zod.string(),
+});
+
+/**
+ * @summary Get a specific journal entry
+ */
+export const GetJournalEntryParams = zod.object({
+  characterId: zod.coerce.number(),
+  entryId: zod.coerce.number(),
+});
+
+export const GetJournalEntryResponse = zod.object({
+  id: zod.number(),
+  characterId: zod.number(),
+  title: zod.string(),
+  body: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a journal entry
+ */
+export const UpdateJournalEntryParams = zod.object({
+  characterId: zod.coerce.number(),
+  entryId: zod.coerce.number(),
+});
+
+export const UpdateJournalEntryBody = zod.object({
+  title: zod.string(),
+  body: zod.string(),
+});
+
+export const UpdateJournalEntryResponse = zod.object({
+  id: zod.number(),
+  characterId: zod.number(),
+  title: zod.string(),
+  body: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a journal entry
+ */
+export const DeleteJournalEntryParams = zod.object({
+  characterId: zod.coerce.number(),
+  entryId: zod.coerce.number(),
+});
+
+/**
+ * @summary List all quests
+ */
+export const ListQuestsQueryParams = zod.object({
+  partyId: zod.coerce.number().optional(),
+  status: zod.enum(["active", "completed", "failed"]).optional(),
+});
+
+export const ListQuestsResponseItem = zod.object({
+  id: zod.number(),
+  partyId: zod.number().nullish(),
+  title: zod.string(),
+  description: zod.string(),
+  status: zod.enum(["active", "completed", "failed"]),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListQuestsResponse = zod.array(ListQuestsResponseItem);
+
+/**
+ * @summary Create a new quest
+ */
+export const CreateQuestBody = zod.object({
+  partyId: zod.number().nullish(),
+  title: zod.string(),
+  description: zod.string(),
+  status: zod.enum(["active", "completed", "failed"]).optional(),
+});
+
+/**
+ * @summary Get a specific quest
+ */
+export const GetQuestParams = zod.object({
+  questId: zod.coerce.number(),
+});
+
+export const GetQuestResponse = zod.object({
+  id: zod.number(),
+  partyId: zod.number().nullish(),
+  title: zod.string(),
+  description: zod.string(),
+  status: zod.enum(["active", "completed", "failed"]),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update a quest
+ */
+export const UpdateQuestParams = zod.object({
+  questId: zod.coerce.number(),
+});
+
+export const UpdateQuestBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  status: zod.enum(["active", "completed", "failed"]).optional(),
+  partyId: zod.number().nullish(),
+});
+
+export const UpdateQuestResponse = zod.object({
+  id: zod.number(),
+  partyId: zod.number().nullish(),
+  title: zod.string(),
+  description: zod.string(),
+  status: zod.enum(["active", "completed", "failed"]),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a quest
+ */
+export const DeleteQuestParams = zod.object({
+  questId: zod.coerce.number(),
 });
 
 /**
@@ -378,13 +568,16 @@ export const MoveItemResponse = zod.object({
  */
 export const GetDmOverviewResponseItem = zod.object({
   id: zod.number(),
+  partyId: zod.number().nullish(),
   name: zod.string(),
   playerName: zod.string(),
   characterClass: zod.string(),
   race: zod.string(),
   level: zod.number(),
+  summary: zod.string().nullish(),
   avatarUrl: zod.string().nullish(),
   createdAt: zod.date(),
+  updatedAt: zod.date(),
   items: zod.array(
     zod.object({
       id: zod.number(),
@@ -399,7 +592,9 @@ export const GetDmOverviewResponseItem = zod.object({
         "misc",
       ]),
       description: zod.string(),
+      notes: zod.string().nullish(),
       imageUrl: zod.string().nullish(),
+      quantity: zod.number(),
       location: zod.enum(["equipped", "carried", "stored"]),
       isEquipped: zod.boolean(),
       maxCharges: zod.number().nullish(),
@@ -414,6 +609,7 @@ export const GetDmOverviewResponseItem = zod.object({
       isConsumed: zod.boolean(),
       isTrashed: zod.boolean(),
       createdAt: zod.date(),
+      updatedAt: zod.date(),
     }),
   ),
 });

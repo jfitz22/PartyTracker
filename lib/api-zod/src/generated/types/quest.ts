@@ -5,17 +5,14 @@
  * Attention Dragons API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { QuestStatus } from "./questStatus";
 
-export interface Character {
+export interface Quest {
   id: number;
   partyId?: number | null;
-  name: string;
-  playerName: string;
-  characterClass: string;
-  race: string;
-  level: number;
-  summary?: string | null;
-  avatarUrl?: string | null;
+  title: string;
+  description: string;
+  status: QuestStatus;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -56,7 +56,7 @@ export function ItemCard({ item, onEdit }: ItemCardProps) {
 
   const categoryInfo = CATEGORY_MAP[item.category];
   const CategoryIcon = categoryInfo?.icon || Package;
-  const rarityInfo = item.rarity ? RARITY_MAP[item.rarity as InventoryItemRarity] : null;
+  const rarityInfo = item.rarity ? RARITY_MAP[item.rarity as NonNullable<InventoryItemRarity>] : null;
 
   const hasCharges = item.maxCharges !== null && item.maxCharges !== undefined && item.maxCharges > 0;
   const currentCharges = item.currentCharges ?? 0;
